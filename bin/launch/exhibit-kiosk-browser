@@ -1,0 +1,13 @@
+#!/bin/bash
+# This wrapper script is supposed to be visible in ps -a resp. ps -u `id -u` to make
+# it easy to kill it (by a script or manually)
+
+# Launch the exhibit in the background
+kiosk-browser $KIOSK_OPTS &
+PID=$!
+
+# Kill the exhibit if it is still running whe the script exits
+trap "kill $PID >/dev/null 2>&1" SIGINT SIGTERM EXIT
+
+# Wait for the exhibit to finish or until the signal trap is triggered
+wait

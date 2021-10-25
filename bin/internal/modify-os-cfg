@@ -1,0 +1,63 @@
+#!/usr/bin/augtool -sLf
+
+################################################################################
+# preparations
+################################################################################
+# fix faulty GDM lens
+set /augeas/load/Gdm/incl[. = "/etc/gdm/custom.conf"] "/etc/gdm3/custom.conf"
+set /augeas/load/Gdm/incl[. = "/etc/gdm/gdm.conf*"] "/etc/gdm3/gdm.conf*"
+
+# fix faulty Xorg lens
+set /augeas/load/Xorg/incl[. = "/etc/X11/xorg.conf.d/*.conf"] "/usr/share/X11/xorg.conf.d/*.conf"
+set /augeas/load/Xorg/incl[. = "/etc/X11/xorg.conf"] "/usr/share/X11/xorg.conf"
+
+# hijack Puppet lens for processing some generic INI files
+set /augeas/load/Puppet/incl[last()+1] "/var/lib/AccountsService/users/*"
+
+# Use Shellvars_list lens instead of Shellvars for /etc/default/* files (e.g. /etc/default/grub),
+# because some shell variables contain lists
+rm /augeas/load/Shellvars/incl[. = "/etc/default/*"]
+set /augeas/load/Shellvars_list/incl[last()+1] "/etc/default/*"
+
+# load the modified augtool configuration
+load
+
+################################################################################
+# configuration changes
+################################################################################
+
+# auto-login user 'kiosk' into openbox session
+set /files/etc/gdm3/custom.conf/daemon/AutomaticLoginEnable "true"
+set /files/etc/gdm3/custom.conf/daemon/AutomaticLogin "kiosk"
+set /files/var/lib/AccountsService/users/kiosk/User/XSession "openbox"
+
+# For some reason, GRUB recordfail is triggered after almost every reboot.
+# I don't know how to fix it, so I reduce the boot delay introduced by
+# recordfail to just a couple of seconds.
+rm /files/etc/default/grub/GRUB_RECORDFAIL_TIMEOUT/value[.]
+set /files/etc/default/grub/GRUB_RECORDFAIL_TIMEOUT/quote ""
+set /files/etc/default/grub/GRUB_RECORDFAIL_TIMEOUT/value "3"
+
+# FIXME: Logging out of a session in gdm3 seems to be broken in Ubuntu 20.04
+# See https://bugs.launchpad.net/ubuntu/+source/gdm3/+bug/1845801
+rm /files/etc/default/grub/GRUB_CMDLINE_LINUX_DEFAULT/value[. = "splash"]
+
+################################################################################
+# the following changes caused more harm than good and are therefore disabled
+# by default
+################################################################################
+
+# tweak Intel GPU kernel driver
+#set /files/etc/modprobe.d/i915.conf/options[. = "i915"] "i915"
+#set /files/etc/modprobe.d/i915.conf/options[. = "i915"]/enable_dc "1"
+#set /files/etc/modprobe.d/i915.conf/options[. = "i915"]/enable_fbc "1"
+#set /files/etc/modprobe.d/i915.conf/options[. = "i915"]/semaphores "1"
+#set /files/etc/modprobe.d/i915.conf/options[. = "i915"]/enable_guc "3"
+
+# enable tear-free mode for Intel GPUs
+#set /files/usr/share/X11/xorg.conf.d/20-intel.conf/Device[Identifier = "Intel Graphics"]/Identifier "Intel Graphics"
+#set /files/usr/share/X11/xorg.conf.d/20-intel.conf/Device[Identifier = "Intel Graphics"]/Driver "intel"
+#set /files/usr/share/X11/xorg.conf.d/20-intel.conf/Device[Identifier = "Intel Graphics"]/Option[. = "TearFree"] "TearFree"
+#set /files/usr/share/X11/xorg.conf.d/20-intel.conf/Device[Identifier = "Intel Graphics"]/Option[. = "TearFree"]/value "true"
+#set /files/usr/share/X11/xorg.conf.d/20-intel.conf/Device[Identifier = "Intel Graphics"]/Option[. = "TripleBuffer"] "TripleBuffer"
+#set /files/usr/share/X11/xorg.conf.d/20-intel.conf/Device[Identifier = "Intel Graphics"]/Option[. = "TripleBuffer"]/value "true"

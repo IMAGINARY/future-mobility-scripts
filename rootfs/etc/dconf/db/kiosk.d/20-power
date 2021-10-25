@@ -1,0 +1,4 @@
+[org/gnome/settings-daemon/plugins/power]
+power-button-action='interactive'
+button-power='shutdown'
+sleep-inactive-ac-type='nothing'

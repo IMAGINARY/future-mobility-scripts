@@ -1,0 +1,8 @@
+#!/bin/bash
+
+COMMITISH="8769427780086eda2f0a5f0d56b1e6981cf02f57"
+REPO_URL="https://github.com/IMAGINARY/beating-crime-with-ai.git"
+INSTALL_DIR="/opt/beating-crime-with-ai"
+
+"${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
+exit $?

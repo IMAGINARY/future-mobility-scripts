@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Kiosk
+Comment=Log into a plain X11 session to start the exhibit
+Exec=/opt/kiosk-scripts/bin/kiosk-session
+TryExec=/opt/kiosk-scripts/bin/kiosk-session
+Icon=openbox
+Type=Application

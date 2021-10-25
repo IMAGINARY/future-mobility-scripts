@@ -1,0 +1,19 @@
+#!/usr/bin/augtool -sf
+
+# Never notify about OS upgrades
+set /files/etc/update-manager/release-upgrades/DEFAULT/Prompt "never"
+
+# Disable automatic updates of package list and automatic installation of
+# updates and upgrades
+set /files/etc/apt/apt.conf.d/10periodic/APT[Periodic/Enable]/Periodic/Enable "0"
+set /files/etc/apt/apt.conf.d/10periodic/APT[Periodic/Update-Package-Lists]/Periodic/Update-Package-Lists "0"
+set /files/etc/apt/apt.conf.d/10periodic/APT[Periodic/Download-Upgradeable-Packages]/Periodic/Download-Upgradeable-Packages "0"
+set /files/etc/apt/apt.conf.d/10periodic/APT[Periodic/AutocleanInterval]/Periodic/AutocleanInterval "0"
+set /files/etc/apt/apt.conf.d/10periodic/APT[Periodic/Unattended-Upgrade]/Periodic/Unattended-Upgrade "0"
+
+# For some reason, the settings are also stored in a second file that takes priority
+set /files/etc/apt/apt.conf.d/20auto-upgrades/APT[Periodic/Enable]/Periodic/Enable "0"
+set /files/etc/apt/apt.conf.d/20auto-upgrades/APT[Periodic/Update-Package-Lists]/Periodic/Update-Package-Lists "0"
+set /files/etc/apt/apt.conf.d/20auto-upgrades/APT[Periodic/Download-Upgradeable-Packages]/Periodic/Download-Upgradeable-Packages "0"
+set /files/etc/apt/apt.conf.d/20auto-upgrades/APT[Periodic/AutocleanInterval]/Periodic/AutocleanInterval "0"
+set /files/etc/apt/apt.conf.d/20auto-upgrades/APT[Periodic/Unattended-Upgrade]/Periodic/Unattended-Upgrade "0"

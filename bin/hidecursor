@@ -1,0 +1,25 @@
+#!/bin/bash
+# This script is supposed to hide the cursor while the "$@" is running.
+# Afterwards the cursor must be visible again (i.e. xbanish must have exited).
+
+# start xbanish to hide the cursor
+xbanish &
+XBANISH_PID=$!
+
+# Don't use exec here because the user must still to be able to ps | grep for hidecursor.
+# Execute argument as background process
+"$@" &
+BG_PID=$!
+
+# Set up a trap that kill the child processes before exiting the script
+trap "kill $XBANISH_PID $BG_PID >/dev/null 2>&1" SIGINT SIGTERM EXIT
+
+# Wait for the main background process to finish
+# May be interrupted, but this would call the trap handler
+wait $BG_PID
+
+# Kill xbanish if main background process has exited normally (not killed by trap handler)
+kill $XBANISH_PID >/dev/null 2>&1
+
+# Set exit code
+exit 0

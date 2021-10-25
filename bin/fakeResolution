@@ -1,0 +1,9 @@
+#!/bin/bash
+activeOutput=$(xrandr | grep -E " connected (primary )?[1-9]+" | sed -e "s/\([A-Z0-9]\+\) connected.*/\1/")
+if [ -z "$1" ];
+  then
+    echo "Missing resolution argument, e.g. 3840x2160"
+else
+  resolution="$1"
+  exec xrandr --output $activeOutput --auto --fb $resolution --panning $resolution --scale-from $resolution
+fi

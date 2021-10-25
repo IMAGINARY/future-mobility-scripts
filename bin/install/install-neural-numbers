@@ -1,0 +1,8 @@
+#!/bin/bash
+
+COMMITISH="v0.2.0"
+REPO_URL="https://github.com/IMAGINARY/neural-numbers.git"
+INSTALL_DIR="/opt/neural-numbers"
+
+"${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
+exit $?

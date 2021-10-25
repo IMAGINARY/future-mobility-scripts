@@ -1,0 +1,62 @@
+#!/bin/bash
+
+if [ "$UID" -ne 0 ]
+then
+    >&2 echo "This script requires superuser priviledges."
+    exit 1
+fi
+
+set -e
+
+install() {
+    # don't prompt during installations
+    export DEBIAN_FRONTEND=noninteractive
+    
+    # Install dependencies
+    apt install -yq \
+        augeas-tools \
+        git \
+        inxi \
+        '' # dummy entry to terminate the list
+
+    # retrieve files via git
+    INSTALL_DIR="/opt/kiosk-scripts"
+    BRANCH="wip"
+    mkdir -p "$INSTALL_DIR"
+    cd "$INSTALL_DIR"
+    git init
+
+    # Checkout the requested branch
+    git checkout "$BRANCH" 2> /dev/null || git checkout -b "$BRANCH"
+
+    if [[ `git status --porcelain` ]]; then
+        git reset --hard
+        echo "There were local changes. Re-running ..."
+        exec "./bin/install/install-kiosk-scripts" "$@"
+    else
+        # no local changes, check for remote changes
+        git remote remove origin &> /dev/null || true
+        git remote add origin https://github.com/IMAGINARY/iamai-scripts.git
+        git fetch --tags origin
+
+        EMPTY_TREE_SHA=$(git hash-object -t tree --stdin < /dev/null)
+
+        # When the local repo is empty, use the SHA of the empty repo, because
+        # git rev-parse doesn't work in this situation
+        LOCAL_SHA=$( ( git rev-parse wip &> /dev/null && git rev-parse wip ) || echo "$EMPTY_TREE_SHA" )
+        REMOTE_SHA=$(git rev-parse "origin/$BRANCH")
+
+        if [ ! "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
+            git reset --hard "origin/$BRANCH"
+            git checkout "origin/$BRANCH"
+            echo "There were remote changes. Re-running ..."
+            exec "./bin/install/install-kiosk-scripts" "$@"
+        fi
+    fi
+
+    echo "kiosk-scripts files up to date. Running scripts ..."
+
+    ./bin/internal/install-kiosk-scripts-local "$@"
+}
+
+install "$@"

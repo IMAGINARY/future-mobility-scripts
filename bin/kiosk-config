@@ -1,0 +1,512 @@
+#!/bin/bash
+
+# Script partially based on https://github.com/RPi-Distro/raspi-config
+
+DIALOG=whiptail
+ASK_TO_REBOOT=${ASK_TO_REBOOT:-0}
+CONFIG_FILE="/etc/default/kiosk"
+
+reload_config_file() {
+    . "$CONFIG_FILE"
+}
+
+ensure_root_privileges() {
+    if [ $(id -u) -ne 0 ]; then
+        local MSG_TEXT
+        MSG_TEXT="Welcome to the kiosk configuration utility.\n"
+        MSG_TEXT+="\n"
+        MSG_TEXT+="This tool must be run as root. "
+        MSG_TEXT+="You will be prompted for the superuser password."
+        sudo -n "true" &> /dev/null || "$DIALOG" \
+            --title "Kiosk Configuration Tool (kiosk-config)" \
+            --msgbox "$MSG_TEXT" 0 0
+        exec sudo -E "$0" "$@"
+    fi
+}
+
+calc_wt_size() {
+  # NOTE: it's tempting to redirect stderr to /dev/null, so supress error 
+  # output from tput. However in this case, tput detects neither stdout or 
+  # stderr is a tty and so only gives default 80, 24 values
+  D_HEIGHT=18
+  D_WIDTH=$(tput cols)
+
+  if [ -z "$D_WIDTH" ] || [ "$D_WIDTH" -lt 60 ]; then
+    D_WIDTH=80
+  fi
+  if [ "$D_WIDTH" -gt 178 ]; then
+    D_WIDTH=120
+  fi
+  D_MENU_HEIGHT=$(($D_HEIGHT-7))
+}
+
+error_unrecognized_option() {
+    "$DIALOG" --msgbox "Programmer error: unrecognized option $1" 0 0
+    exit 1
+}
+
+error_processing_option() {
+    "$DIALOG" --msgbox "There was an error running option $1" 0 0
+    exit 1
+}
+
+do_finish() {
+  if [ $ASK_TO_REBOOT -eq 1 ]; then
+    "$DIALOG" --yesno "Would you like to reboot now?" 0 0
+    if [ $? -eq 0 ]; then # yes
+      sync
+      reboot
+    fi
+  fi
+  exit 0
+}
+
+do_unimplemented() {
+    "$DIALOG" --msgbox "Not implemented yet"  0 0 1
+}
+
+set_config_variable() {
+    local AUG_CMD="
+        set /augeas/load/Shellvars/lens \"Shellvars.lns\"
+        set /augeas/load/Shellvars/incl[.] \"${CONFIG_FILE}\"
+        load
+        set /files/${CONFIG_FILE}/$1 \"$2\"
+    "
+    augtool -s --noautoload <<< "$AUG_CMD" &&
+        reload_config_file &&
+        ASK_TO_REBOOT=1
+}
+
+do_select_file() {
+    local MENU_TITLE=$1
+    local MENU_TEXT=$2
+    local ERROR_MSG=$3
+    shift 3
+    set -o noglob # otherwise the arguments to 'find' will be expanded too early
+    local FIND_ARGS=($@)
+    local CMD CMDS MENU_ITEMS FUN RET
+    CMDS=$(find "${FIND_ARGS[@]}")
+    set +o noglob
+    MENU_ITEMS=()
+    for CMD in $CMDS; do
+      MENU_ITEMS+=( "$CMD" "" )
+    done
+    if [ -n "$CMDS" ]; then
+        "$DIALOG" --title "$MENU_TITLE" \
+            --menu "$MENU_TEXT" 0 0 0 \
+            --cancel-button Back \
+            --ok-button Select \
+            "${MENU_ITEMS[@]}"\
+            3>&1 1>&2 2>&3
+    else
+        "$DIALOG" --msgbox "$ERROR_MSG" 0 0 3>&1 1>&2 2>&3
+        return 1
+    fi
+}
+
+do_select_initializer() {
+    do_select_file \
+        "Exhibit initializer selection" \
+        "Select the exhibit initializer to start automatically" \
+        "No pre-installed exhibit initializers found." \
+        /opt/kiosk-scripts/bin/init -perm -a=x -name init-\*
+}
+
+do_select_exhibit() {
+    do_select_file \
+        "Exhibit selection" \
+        "Select the exhibit to start automatically" \
+        "No pre-installed exhibits found." \
+        /opt/kiosk-scripts/bin/launch -perm -a=x -name exhibit-\*
+}
+
+do_custom_initializer() {
+    "$DIALOG" --title "Exhibit initializer selection" \
+        --inputbox "Enter a command" 0 $D_WIDTH "" \
+        --cancel-button Back \
+        3>&1 1>&2 2>&3
+}
+
+do_custom_exhibit() {
+    "$DIALOG" --title "Exhibit selection" \
+        --inputbox "Enter a command" 0 $D_WIDTH "" \
+        --cancel-button Back \
+        3>&1 1>&2 2>&3
+}
+
+do_exhibit_menu() {
+    while true; do
+        local FUN RET MENU_TEXT
+        reload_config_file
+        MENU_TEXT="Set system-wide default exhibit initializer and default exhibit. The initializer will run once before the exhibit is launched.\n"
+        MENU_TEXT+="\n"
+        MENU_TEXT+="Current exhibit initializer: \"$INIT_EXHIBIT\"\n"
+        MENU_TEXT+="Current exhibit:             \"$LAUNCH_EXHIBIT\""
+        FUN=$("$DIALOG" --title "Exhibit selection" \
+            --menu "$MENU_TEXT" 0 0 0 \
+            --cancel-button Back \
+            --ok-button Select \
+            "1 Pre-installed initializer" "Set one of the pre-installed exhibit initializers" \
+            "2 Custom initializer" "Enter a custom exhibit initializer command" \
+            "3 No initializer" "Do not set a system-wide default exhibit initializer" \
+            "4 Pre-installed exhibit" "Set one of the pre-installed exhibit launchers" \
+            "5 Custom exhibit" "Enter a custom exhibit command" \
+            "6 No exhibit" "Do not set a system-wide default exhibit" \
+            3>&1 1>&2 2>&3)
+        RET=$?
+        if [ $RET -eq 1 ]; then
+            return 0
+        elif [ $RET -eq 0 ]; then
+            local CMD=""
+            case "$FUN" in
+                1\ *)
+                    CMD=$(do_select_initializer)
+                    RET=$?
+                    ;;
+                2\ *)
+                    CMD=$(do_custom_initializer)
+                    RET=$?
+                    ;;
+                3\ *)
+                    CMD=""
+                    RET=0
+                    ;;
+                4\ *)
+                    CMD=$(do_select_exhibit)
+                    RET=$?
+                    ;;
+                5\ *)
+                    CMD=$(do_custom_exhibit)
+                    RET=$?
+                    ;;
+                6\ *)
+                    CMD=""
+                    RET=0
+                    ;;
+                *) error_unrecognized_option "$FUN" ;;
+            esac || error_processing_option "$FUN"
+        fi
+        
+        if [ $RET -eq 0 ]; then
+            if [[ "$FUN" = "1 "* || "$FUN" = "2 "* || "$FUN" = "3 "* ]]; then
+                set_config_variable "INIT_EXHIBIT" "$CMD" \
+                    || "$DIALOG" --msgbox "Error setting system-wide default exhibit initializer" 0 0
+            else
+                set_config_variable "LAUNCH_EXHIBIT" "$CMD" \
+                    || "$DIALOG" --msgbox "Error setting system-wide default exhibit" 0 0
+            fi
+        fi
+    done
+}
+
+is_overlayroot_enabled() {
+    mount | grep "^overlayroot on / type overlay" &> /dev/null;
+}
+
+warn_overlayroot() {
+    if is_overlayroot_enabled; then
+        local MENU_TEXT
+        MENU_TEXT="Read-only mode is enabled. "
+        MENU_TEXT+="Most of your changes will be lost after reboot.\n"
+        MENU_TEXT+="\n"
+        MENU_TEXT+="You can disable read-only mode in the 'Hardening' menu."
+        "$DIALOG" --msgbox "$MENU_TEXT" 0 0
+    fi
+} 
+
+do_overlayroot_menu() {
+    local MENU_TEXT
+    OVERLAYROOT_STATUS_TEXT=$((is_overlayroot_enabled && echo "ENABLED") || echo "DISABLED")
+    MENU_TEXT="In read-only mode, changes to the local file system will not be permanent and be gone after reboot.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="It looks like read-only mode is currently ${OVERLAYROOT_STATUS_TEXT}.\n"
+    MENU_TEXT+="Note that this setting will only become active after reboot.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="Enable read-only mode? Press <ESC> to abort.\n"
+    "$DIALOG" --title "Toggle read-only mode" \
+        --yesno "$MENU_TEXT" 0 0
+    case "$?" in
+        0)
+            enable-overlayroot && ASK_TO_REBOOT=1
+            ;;
+        1)
+            disable-overlayroot && ASK_TO_REBOOT=1
+            ;;
+        255)
+            return 0
+            ;;
+        *) error_unrecognized_option "$RET" ;;
+    esac || error_processing_option "$RET"
+}
+
+do_loop_exhibit_menu() {
+    local MENU_TEXT
+    LOOP_MODE_STATUS_TEXT=$(([ "$LOOP_MODE" = "true" ] && echo "ENABLED") || echo "DISABLED")
+    MENU_TEXT="In loop mode, the default exhibit will be restarted when it quits regardless of its exit status (success or failure).\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="It looks like loop mode is currently ${LOOP_MODE_STATUS_TEXT}.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="Enable loop mode? Press <ESC> to abort.\n"
+    "$DIALOG" --title "Toggle loop mode" \
+        --yesno "$MENU_TEXT" 0 0
+    case "$?" in
+        0) set_config_variable "LOOP_MODE" "true" ;;
+        1) set_config_variable "LOOP_MODE" "false" ;;
+        255) return 0 ;;
+        *) error_unrecognized_option "$RET" ;;
+    esac || "$DIALOG" --msgbox "Error applying loop mode setting" 0 0
+}
+
+
+get_graphical_session() {
+    local AUG_CMD="
+        set /augeas/load/Puppet/lens \"Puppet.lns\"
+        set /augeas/load/Puppet/incl[.] \"/var/lib/AccountsService/users/*\"
+        load
+        get /files/var/lib/AccountsService/users/$1/User/XSession
+    "
+    augtool -s --noautoload <<< "$AUG_CMD" | sed "s/^.* = //g"
+}
+
+set_graphical_session() {
+    local AUG_CMD="
+        set /augeas/load/Puppet/lens \"Puppet.lns\"
+        set /augeas/load/Puppet/incl[.] \"/var/lib/AccountsService/users/*\"
+        load
+        set /files/var/lib/AccountsService/users/$1/User/XSession \"$2\"
+    "
+    augtool -s --noautoload <<< "$AUG_CMD" &&
+        ASK_TO_REBOOT=1
+}
+
+do_graphical_session_menu() {
+    local MENU_TEXT FUN RET
+    MENU_TEXT="Select the graphical session for the kiosk user.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="Current session: $(get_graphical_session kiosk)"
+    FUN=$("$DIALOG" --title "Graphical session" \
+        --menu "$MENU_TEXT" 0 0 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 kiosk" "Plain X11 without window manager. Very hard to escape without a keyboard. Has issues with multiple windows and window sizing." \
+        "2 openbox" "Openbox window manager. No permanent menus and sidebars. Right click on the desktop allows to perform unsafe actions." \
+        "3 ubuntu" "Regular Ubuntu Gnome desktop environment. Not suitable for kiosk environments." \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) set_graphical_session kiosk kiosk ;;
+            2\ *) set_graphical_session kiosk openbox ;;
+            3\ *) set_graphical_session kiosk ubuntu ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
+    fi
+}
+
+do_hardening_menu() {
+    local FUN RET
+    FUN=$("$DIALOG" --title "Hardening settings" \
+        --menu "" 0 0 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 Read-only Mode" "Switch between read-only and read-write mode for the system partition" \
+        "2 Loop Mode" "Restart the exhibit after it quits for whatever reason" \
+        "3 Graphical Session" "Set the graphical session to use" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) do_overlayroot_menu ;;
+            2\ *) do_loop_exhibit_menu ;;
+            3\ *) do_graphical_session_menu ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
+    fi
+}
+
+do_hidecursor_menu() {
+    local MENU_TEXT
+    HIDECURUSOR_STATUS_TEXT=$(([ "$HIDE_CURSOR" = "true" ] && echo "ENABLED") || echo "DISABLED")
+    MENU_TEXT="Hide or show the system cursor while the exhibit is running."
+    MENU_TEXT="Note that the exhibit itself might apply its own cursor settings.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="It looks like cursor hiding is currently ${HIDECURUSOR_STATUS_TEXT}.\n"
+    MENU_TEXT+="\n"
+    MENU_TEXT+="Enable cursor hiding? Press <ESC> to abort.\n"
+    "$DIALOG" --title "Toggle cursor hiding" \
+        --yesno "$MENU_TEXT" 0 0
+    case "$?" in
+        0) set_config_variable "HIDE_CURSOR" "true" ;;
+        1) set_config_variable "HIDE_CURSOR" "false" ;;
+        255) return 0 ;;
+        *) error_unrecognized_option "$RET" ;;
+    esac || "$DIALOG" --msgbox "Error applying cursor hiding setting" 0 0
+}
+
+do_graphics_and_input_menu() {
+    local FUN RET
+    FUN=$("$DIALOG" --title "Graphics & Input" \
+        --menu "" 0 0 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 Hide cursor" "Enable or disable cursor hiding" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) do_hidecursor_menu ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
+    fi
+}
+
+do_change_locale() {
+    dpkg-reconfigure locales &&
+        ASK_TO_REBOOT=1
+}
+
+do_configure_keyboard() {
+    printf "Reloading keymap. This may take a short while\n"
+    dpkg-reconfigure keyboard-configuration &&
+        invoke-rc.d keyboard-setup start &&
+        setsid sh -c 'exec setupcon -k --force <> /dev/tty1 >&0 2>&1' &&
+        udevadm trigger --subsystem-match=input --action=change &&
+        ASK_TO_REBOOT=1
+}
+
+do_change_timezone() {
+    dpkg-reconfigure tzdata &&
+        ASK_TO_REBOOT=1
+}
+
+do_localization_menu() {
+    local FUN RET
+    FUN=$("$DIALOG" --title "Localization Options" \
+        --menu "" 0 $D_WIDTH 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 Locale" "Set up language and regional settings to match your location" \
+        "2 Timezone" "Set up timezone to match your location" \
+        "3 Keyboard Layout" "Set the keyboard layout to match your keyboard" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) do_change_locale ;;
+            2\ *) do_change_timezone ;;
+            3\ *) do_configure_keyboard ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
+    fi
+}
+
+do_select_installer() {
+    do_select_file \
+        "Update-script selection" \
+        "Select the installer to run" \
+        "No pre-installed exhibits found." \
+        /opt/kiosk-scripts/bin/install -perm -a=x -name install-\*
+}
+
+do_update_menu()  {
+    local MSG_TEXT CMD RET
+    MSG_TEXT="New versions of exhibits will only be installed if their install scripts are updated beforehand via the install-kiosk-scripts script.\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Run install-kiosk-scripts now?"
+    "$DIALOG" --yesno "$MSG_TEXT" 0 0
+    if [ $? -eq 0 ]; then # yes
+        install-kiosk-scripts
+    fi
+    CMD=$(do_select_installer)
+    RET=$?
+    if [ $RET -eq 0 ]; then
+        echo "Running $CMD"
+        "$CMD"
+        RET=$?
+        if [ $RET -eq 0 ]; then
+            "$DIALOG" --msgbox "Installation completed without errors." 0 0 3>&1 1>&2 2>&3
+        else
+            "$DIALOG" --msgbox "An error occurred during installation. Please check the output on the terminal." 0 0 3>&1 1>&2 2>&3
+        fi
+    fi
+}
+
+do_system_information_menu() {
+    local FUN RET
+    FUN=$("$DIALOG" --title "System Information" \
+        --menu "" 0 $D_WIDTH 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 Brief" "Show a brief summary" \
+        "2 Detailed" "Show detailed system and hardware information" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        local INFO INXI_CMD
+        case "$FUN" in
+            1\ *)
+                INXI_CMD="inxi -F -w"
+                ;;
+            2\ *)
+                INXI_CMD="inxi -F -d -f -i -l -m -o -p -r -t -u -x -w"
+                ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac
+        # FIXME: Without the bash/export workaround, inxi never quits
+        # No idea what's the problem here!?
+        INFO=$(bash -c "export > /dev/null; $INXI_CMD")
+        "$DIALOG" --scrolltext --msgbox "$INFO" 0 $D_WIDTH
+    fi
+}
+
+do_main_menu() {
+    local FUN RET
+    FUN=$("$DIALOG" --title "Kiosk Configuration Tool (kiosk-config)" \
+        --menu "Configure various settings of this kiosk station." 0 0 0 \
+        --cancel-button Finish \
+        --ok-button Select \
+        "1 Exhibit" "Configure which exhibit to start automatically" \
+        "2 Hardening" "Harden the station" \
+        "3 Graphics & Input" "Configure graphics and input devices" \
+        "4 Localization" "Set up language and regional settings to match your location" \
+        "5 Update" "Update exhibits and install scripts" \
+        "6 System Information" "Display operating system and hardware information" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        do_finish
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) do_exhibit_menu ;;
+            2\ *) do_hardening_menu ;;
+            3\ *) do_graphics_and_input_menu ;;
+            4\ *) do_localization_menu ;;
+            5\ *) do_update_menu ;;
+            6\ *) do_system_information_menu ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
+    fi
+}
+
+
+# Everything else needs to be run as root
+ensure_root_privileges "$@"
+
+# Warn user if overlayroot is enabled
+warn_overlayroot
+
+calc_wt_size
+while true; do
+    reload_config_file
+    do_main_menu
+done

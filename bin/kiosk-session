@@ -1,0 +1,57 @@
+#!/bin/bash
+
+PIDS=""
+function finish {
+  EXIT_CODE=$?
+  kill $PIDS >/dev/null 2>&1
+  exit $EXIT_CODE
+}
+trap finish SIGINT SIGTERM EXIT
+
+# Source system wide default values
+SYSTEM_DEFAULTS_FILE="/etc/default/kiosk"
+[ -r "$SYSTEM_DEFAULTS_FILE" ] && . "$SYSTEM_DEFAULTS_FILE" 
+
+# Source user-defined default values
+CONFIG_DIR="${XDG_CONFIG_HOME:-"$HOME/.config"}/kiosk"
+USER_DEFAULTS_FILE="${CONFIG_DIR}/default"
+[ -r "$USER_DEFAULTS_FILE" ] && . "$USER_DEFAULTS_FILE" 
+
+# For some reason, the X server doesn't seem to be fully ready.
+# It is possible to launch applications, but there are problems with framebuffer scaling and window positioning
+sleep 1
+
+# Disable screen saver
+xset s noblank
+xset s off
+
+exec_exhibit() {
+    local CMD=()
+    [ "$HIDE_CURSOR" = true ] && CMD+=( hidecursor )
+    [ "$LOOP_MODE" = true ] && CMD+=( repeat-exhibit )
+    CMD+=( exhibit-default )
+    exec "${CMD[@]}"
+}
+
+# Set up the default environment for the default exhibit and run it
+( ! init-default --test || init-default ) \
+    && exhibit-default --test \
+    && (exec_exhibit &)
+PIDS="$PIDS $!"
+
+# Run a compositor in the background for dealing with vsync and tearing
+# Should be done after screen setup (e.g. in init-* scripts)
+compton --backend glx --glx-swap-method -1 --vsync opengl-swc &
+PIDS="$PIDS $!"
+
+# Set wallpaper
+# Should be done after screen setup (e.g. in init-* scripts)
+feh --bg-max /opt/kiosk-scripts/assets/wallpaper.png --image-bg "$(< /opt/kiosk-scripts/assets/wallpaper-bg-color.txt)" &
+PIDS="$PIDS $!"
+
+# Keep the session alive until its explicitly killed from outside
+env sleep infinity &
+PID_SLEEP=$!
+PIDS="$PIDS $PID_SLEEP"
+
+wait $PID_SLEEP

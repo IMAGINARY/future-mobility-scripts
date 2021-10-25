@@ -1,0 +1,17 @@
+# Default settings for kiosk scripts. This file is sourced by various scripts
+# from /opt/kiosk-scripts.
+
+# Init script to run before launching the exhibit
+INIT_EXHIBIT=
+
+# Launch this exhibit
+LAUNCH_EXHIBIT="gnome-terminal --wait --full-screen --hide-menubar -- /usr/bin/bash -c 'ASK_TO_REBOOT=1 /opt/kiosk-scripts/bin/kiosk-config'"
+
+# Run exhibit in a loop, e.g. if it crashes or quits for any other reason.
+# Set to true or false.
+LOOP_MODE=true
+
+# Hide or show the system cursor while the exhibit is running.
+# Note that the exhibit itself might apply its own cursor settings.
+# Set to true or false.
+HIDE_CURSOR=true

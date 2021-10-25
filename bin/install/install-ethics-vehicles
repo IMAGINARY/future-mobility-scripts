@@ -1,0 +1,8 @@
+#!/bin/bash
+
+COMMITISH="v1.0.0"
+REPO_URL="https://github.com/IMAGINARY/ethics-vehicles"
+INSTALL_DIR="/opt/ethics-vehicles"
+
+"${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
+exit $?

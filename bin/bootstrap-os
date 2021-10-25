@@ -1,0 +1,89 @@
+#!/bin/bash
+
+if [ "$UID" -ne 0 ]
+then
+    echo "This script requires superuser priviledges."
+    exec sudo "$0" "$@"
+fi
+
+set -e
+
+bootstrap() {
+    # don't prompt during installations
+    export DEBIAN_FRONTEND=noninteractive
+
+    # Add PPA for software not in the default Ubuntu repositories
+    #add-apt-repository -y ppa:jonathonf/barrier
+    # FIXME: Use Bionic packages untul Focal packages are released
+    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8CF63AD3F06FC659
+    add-apt-repository "deb http://ppa.launchpad.net/jonathonf/barrier/ubuntu bionic main"
+
+    # Update the list of available packages
+    apt update
+
+    # Update all currently installed packages
+    apt upgrade -y
+
+    # Preconfigure some Debian packages to avoid interactive prompts
+    echo "jackd2 jackd/tweak_rt_limits boolean true" | debconf-set-selections
+
+    # Install some useful packages
+    apt install -yq --no-install-recommends \
+        aconnectgui \
+        barrier \
+        compton \
+        curl \
+        feh \
+        git \
+        htop \
+        jackd2 \
+        mesa-utils \
+        net-tools \
+        nginx \
+        openbox \
+        openssh-server \
+        overlayroot \
+        pavucontrol \
+        qjackctl \
+        qsynth \
+        ranger \
+        vmpk \
+        '' # dummy entry to terminate the list
+
+    # FIXME:    kmidimon \
+
+
+    # Add the kiosk user to the audio group for accessing the realtime permissions
+    # as set up by jackd above
+    adduser kiosk audio
+
+    # Fetch and execute kiosk-scripts installer; put kiosk-scripts into PATH
+    local INSTALL_KIOSK_SCRIPTS_ARGS=()
+    if [[ "$*" == *--no-update-grub* ]]; then
+        INSTALL_KIOSK_SCRIPTS_ARGS+=( "--no-update-grub" )
+    fi
+    if [[ "$*" == *--confirm-rsync-overwrite* ]]; then
+        INSTALL_KIOSK_SCRIPTS_ARGS+=( "--confirm-rsync-overwrite" )
+    fi
+    curl -L https://github.com/IMAGINARY/iamai-scripts/raw/master/bin/install/install-kiosk-scripts | bash -s -- "${INSTALL_KIOSK_SCRIPTS_ARGS[@]}"
+    source "/opt/kiosk-scripts/rootfs/etc/profile.d/kiosk-bin-path.sh"
+
+    # Install dependencies common to many exhibits
+    install-kiosk-browser
+
+    # Install the exhibits
+    install-ai-jam
+    install-beating-crime-with-ai
+    install-ethics-vehicles
+    install-neural-numbers
+    install-reinforcement-learning
+    install-simple-networks
+    install-sumory
+    install-talk-to-me
+    install-treasure-hunt
+
+    # Run the kiosk-config script
+    ASK_TO_REBOOT=1 /opt/kiosk-scripts/bin/kiosk-config
+}
+
+bootstrap "$@"

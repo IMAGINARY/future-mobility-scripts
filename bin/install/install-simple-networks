@@ -1,0 +1,8 @@
+#!/bin/bash
+
+COMMITISH="v0.1.0"
+REPO_URL="https://github.com/IMAGINARY/simple-networks.git"
+INSTALL_DIR="/opt/simple-networks"
+
+"${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
+exit $?

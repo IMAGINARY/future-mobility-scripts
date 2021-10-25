@@ -1,0 +1,9 @@
+[Unit]
+Description=Automatic Power-Off
+
+[Timer]
+OnCalendar=23:30
+Persistent=false
+
+[Install]
+WantedBy=basic.target

@@ -1,0 +1,21 @@
+#!/bin/bash
+# This script is supposed to run "$@" in a loop.
+# When the script is terminated from outside, the loop must
+# end as well as the process running inside the loop
+
+# Repeatedly start the command given as argument
+while true;
+do
+	# Start argument in background
+	"$@" &
+	PID=$!
+
+	# Set up trap handler to kill background process on interruption and exit the loop by kill the script
+	trap "trap - SIGTERM && kill -- $PID; exit" SIGINT SIGTERM EXIT
+
+	# Wait for background process to finish or interrupt
+	wait
+
+	# Wait until background process finished on its own or is killed by the trap handler
+	wait
+done

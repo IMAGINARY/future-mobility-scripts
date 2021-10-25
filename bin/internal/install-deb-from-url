@@ -1,0 +1,41 @@
+#!/bin/bash
+
+if [ "$UID" -ne 0 ]
+then
+    >&2 echo "This script requires superuser privileges."
+    exit 1
+fi
+
+set -e
+
+USAGE_STRING="Usage: $0 package_name package_version deb_url"
+
+if [[ "$*" == *--help* ]]
+then
+    echo "$USAGE_STRING"
+    exit
+fi
+
+if [ "$#" -ne 3 ]; then
+    echo "Illegal number of parameters"
+    exit 2
+fi
+
+
+PACKAGE_NAME="$1"
+PACKAGE_VERSION="$2"
+DEB_URL="$3"
+
+PACKAGE_VERSION_INSTALLED=$(dpkg-query --showformat='${Version} ${Status}' --show "${PACKAGE_NAME}" 2> /dev/null | awk '$NF == "installed"{print $1}')
+if [ "$PACKAGE_VERSION" = "$PACKAGE_VERSION_INSTALLED" ]
+then
+    echo "$PACKAGE_NAME v$PACKAGE_VERSION already installed"
+else
+    # Download the .deb file
+    TEMP_DEB="$(mktemp --suffix .deb)"
+    wget -O "$TEMP_DEB" "$DEB_URL"
+    
+    # Install the .deb file
+    apt install "$TEMP_DEB"
+    rm -f "$TEMP_DEB"
+fi

@@ -1,0 +1,6 @@
+#!/bin/bash
+# This script is supposed to kill the current kiosk session such that that the system goes back to the login screen such
+# that it becomes possible to log into another session (and back).
+
+# Kill the gdm X11 session of the current user
+exec killall -u `id -nu` gdm-x-session

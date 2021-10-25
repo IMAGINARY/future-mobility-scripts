@@ -1,0 +1,4 @@
+[com/ubuntu/update-notifier]
+regular-auto-launch-interval=2147483647
+show-apport-crashes=false
+no-show-notifications=true

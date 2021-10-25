@@ -1,0 +1,10 @@
+[org/gnome/desktop/notifications]
+application-children=['update-manager','org-gnome-software']
+show-banners=false
+show-in-lock-screen=false
+
+[org/gnome/desktop/notifications/application/update-manager]
+enable=false
+
+[org/gnome/desktop/notifications/application/org-gnome-software]
+enable=false

@@ -1,0 +1,50 @@
+#!/bin/bash
+
+if [ "$UID" -ne 0 ]
+then
+    >&2 echo "This script requires superuser priviledges."
+    exit 1
+fi
+
+set -e
+
+USAGE_STRING="Usage: $0 commit_or_branch repository_url directory"
+
+if [[ "$*" == *--help* ]]
+then
+    echo "$USAGE_STRING"
+    exit
+fi
+
+if [ "$#" -ne 3 ]; then
+    echo "Illegal number of parameters"
+    exit 2
+fi
+
+
+COMMITISH="$1"
+REPO_URL="$2"
+INSTALL_DIR="$3"
+
+# Make sure the folder exists
+mkdir -p "$INSTALL_DIR"
+
+cd "$INSTALL_DIR"
+
+# Set up a new repo or re-use the already existing one
+git init
+git remote remove origin &> /dev/null || true
+git remote add origin "$REPO_URL"
+git reset --hard
+
+# Detach HEAD, but only if HEAD points to a commit
+git rev-parse HEAD &> /dev/null && git checkout --detach
+
+# Delete all local branches (except for the now detached HEAD)
+git branch | grep -v "^[*]" | sed 's/^ *//' | xargs -I {} git branch -D "{}"
+
+# Fetch new data, if any
+git fetch --tags origin
+
+# Checkout the requested branch or commit hash
+git checkout "$COMMITISH"
