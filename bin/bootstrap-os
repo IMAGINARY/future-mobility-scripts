@@ -12,12 +12,6 @@ bootstrap() {
     # don't prompt during installations
     export DEBIAN_FRONTEND=noninteractive
 
-    # Add PPA for software not in the default Ubuntu repositories
-    #add-apt-repository -y ppa:jonathonf/barrier
-    # FIXME: Use Bionic packages untul Focal packages are released
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 8CF63AD3F06FC659
-    add-apt-repository "deb http://ppa.launchpad.net/jonathonf/barrier/ubuntu bionic main"
-
     # Update the list of available packages
     apt update
 
@@ -72,15 +66,7 @@ bootstrap() {
     install-kiosk-browser
 
     # Install the exhibits
-    install-ai-jam
-    install-beating-crime-with-ai
-    install-ethics-vehicles
-    install-neural-numbers
-    install-reinforcement-learning
-    install-simple-networks
-    install-sumory
-    install-talk-to-me
-    install-treasure-hunt
+
 
     # Run the kiosk-config script
     ASK_TO_REBOOT=1 /opt/kiosk-scripts/bin/kiosk-config

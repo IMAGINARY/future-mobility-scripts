@@ -1,8 +1,0 @@
-#!/bin/bash
-
-COMMITISH="master"
-REPO_URL="https://github.com/IMAGINARY/reinforcement-learning.git"
-INSTALL_DIR="/opt/reinforcement-learning"
-
-"${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
-exit $?

@@ -1,5 +1,5 @@
 [org/gnome/desktop/background]
 picture-uri='file:///opt/kiosk-scripts/assets/wallpaper.png'
 picture-options='scaled'
-primary-color='#FFFFFF'
+primary-color='#000000'
 color-shading-type='solid'

@@ -1,6 +1,6 @@
-# I-AM-A.I. scripts
+# Future-Mobility scripts
 
-These scripts are used to install certain interactive stations in the I AM A.I. exhibition.
+These scripts are used to setup a station running the future-mobility exhibit.
 
 # Installation
 
@@ -23,7 +23,7 @@ The script `bin/bootstrap-os` will install required packages, the scripts in thi
 well as most of the exhibits:
 
 ```
-wget https://raw.githubusercontent.com/IMAGINARY/iamai-scripts/master/bin/bootstrap-os
+wget https://raw.githubusercontent.com/IMAGINARY/future-mobility-scripts/main/bin/bootstrap-os
 chmod +x bootstrap-os
 sudo ./bootstrap-os
 ```
