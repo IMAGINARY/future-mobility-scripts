@@ -6,7 +6,7 @@ These scripts are used to setup a station running the future-mobility exhibit.
 
 ## Kiosk OS
 
-The target system for running the script is Ubuntu 20.04 provided that the following settings have been applied during installation:
+The target system for running the script is Ubuntu 21.10 provided that the following settings have been applied during installation:
 
 - Choose minimal installation
 - Install third-party software for graphics and WiFi hardware... : ON
