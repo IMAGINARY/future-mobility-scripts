@@ -27,7 +27,7 @@ install() {
     git init
 
     # Checkout the requested branch
-    git checkout "$BRANCH" 2> /dev/null || git checkout -b "$BRANCH"
+    git checkout -f "$BRANCH" 2> /dev/null || git checkout -f -b "$BRANCH"
 
     if [[ `git status --porcelain` ]]; then
         git reset --hard
@@ -43,12 +43,12 @@ install() {
 
         # When the local repo is empty, use the SHA of the empty repo, because
         # git rev-parse doesn't work in this situation
-        LOCAL_SHA=$( ( git rev-parse wip &> /dev/null && git rev-parse wip ) || echo "$EMPTY_TREE_SHA" )
+        LOCAL_SHA=$( ( git rev-parse "$BRANCH" &> /dev/null && git rev-parse "$BRANCH" ) || echo "$EMPTY_TREE_SHA" )
         REMOTE_SHA=$(git rev-parse "origin/$BRANCH")
 
         if [ ! "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
             git reset --hard "origin/$BRANCH"
-            git checkout "origin/$BRANCH"
+            git checkout -f "origin/$BRANCH"
             echo "There were remote changes. Re-running ..."
             exec "./bin/install/install-kiosk-scripts" "$@"
         fi
