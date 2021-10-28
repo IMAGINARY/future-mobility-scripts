@@ -36,6 +36,7 @@ else
     wget -O "$TEMP_DEB" "$DEB_URL"
     
     # Install the .deb file
-    apt install "$TEMP_DEB"
+    export DEBIAN_FRONTEND=noninteractive
+    apt install -y "$TEMP_DEB"
     rm -f "$TEMP_DEB"
 fi
