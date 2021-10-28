@@ -1,0 +1,32 @@
+#!/bin/bash
+
+if [ "$UID" -ne 0 ]
+then
+    >&2 echo "This script requires superuser privileges."
+    exit 1
+fi
+
+set -e
+
+VERSION=v16.13.0
+DISTRO=linux-x64
+URL="https://nodejs.org/dist/${VERSION}/node-${VERSION}-${DISTRO}.tar.xz"
+UNPACK_DIR="/opt/future-mobility/nodejs"
+BIN_DIR="${UNPACK_DIR}/bin"
+
+INSTALLED_VERSION=$("${BIN_DIR}/node" --version || true)
+
+if [[ "$INSTALLED_VERSION" == "$VERSION" ]]
+then
+  echo "node-${VERSION}-${DISTRO} already installed"
+else
+  # Download the archive
+  TEMP_FILE="$(mktemp --suffix .tar.xz)"
+  wget -O "$TEMP_FILE" "$URL"
+
+  # Unpack the archive
+  mkdir -p "${UNPACK_DIR}"
+  rm -rf "$NODE_DIR" || true
+  tar -xJvf "$TEMP_FILE" --strip-components=1 -C "${UNPACK_DIR}"
+  rm -f "$TEMP_DEB"
+fi

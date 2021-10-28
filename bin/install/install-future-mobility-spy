@@ -1,0 +1,11 @@
+#!/bin/bash
+
+set -e
+
+install-kiosk-browser
+
+COMMITISH="HEAD"
+REPO_URL="https://github.com/IMAGINARY/future-mobility-spy.git"
+INSTALL_DIR="/opt/future-mobility/future-mobility-spy"
+
+"${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
