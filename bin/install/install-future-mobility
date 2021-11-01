@@ -19,4 +19,3 @@ EOL
 udevadm trigger
 
 # TODO: setup config files
-
