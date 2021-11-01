@@ -10,10 +10,18 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
-# Launch the future-mobility server
-cd "/opt/future-mobility/future-mobility/server" || exit 1
+INSTALL_DIR="/opt/future-mobility/future-mobility/"
+SERVER_INSTALL_DIR="/opt/future-mobility/future-mobility/server"
+CONFIG_DIR="${HOME}/.config/future-mobility"
 NODEJS_PATH="/opt/future-mobility/nodejs/bin"
-PATH="$NODEJS_PATH:$PATH" npm run start &
+
+# Create a settings file if it doesn't exist already
+mkdir -p "${CONFIG_DIR}" && \
+  cp -n "${INSTALL_DIR}/settings.yml" "${CONFIG_DIR}/app-settings.yml"
+
+# Launch the future-mobility server
+cd "${SERVER_INSTALL_DIR}" || exit 1
+PATH="$NODEJS_PATH:$PATH" npm run start -s "${CONFIG_DIR}/app-settings.yml" &
 PID_SERVER="$!"
 PIDS="$PIDS $PID_SERVER"
 
