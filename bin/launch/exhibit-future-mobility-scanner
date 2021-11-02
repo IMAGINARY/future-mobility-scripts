@@ -17,9 +17,13 @@ CONFIG_DIR="${HOME}/.config/future-mobility"
 # Create a settings file if it doesn't exist already
 mkdir -p "${CONFIG_DIR}" && \
   cp -n "${INSTALL_DIR}/config.example.yaml" "${CONFIG_DIR}/scanner-config.yml"
-  
+
 # Launch the tag-grid-scanner with the right config file
-tag-grid-scanner scan -c "${CONFIG_DIR}/scanner-config.yml" &
+tag-grid-scanner scan \
+  -c "${CONFIG_DIR}/scanner-config.yml" \
+  --rate-limit 6 \
+  "$@" \
+  &
 PID_SCANNER="$!"
 PIDS="$PIDS $PID_SCANNER"
 
