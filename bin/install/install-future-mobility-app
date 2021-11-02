@@ -13,8 +13,5 @@ export PATH="$NODEJS_BIN_DIR:$PATH"
 
 "${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
 
-cd "$INSTALL_DIR"
-npm install --production
-
 cd "$INSTALL_DIR/server"
 npm install
