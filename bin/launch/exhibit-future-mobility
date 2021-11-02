@@ -10,7 +10,7 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
-exhibit-future-mobility-scanner &
+exhibit-future-mobility-scanner-headless &
 PID_SCANNER=$!
 PIDS="$PIDS $PID_SCANNER"
 
