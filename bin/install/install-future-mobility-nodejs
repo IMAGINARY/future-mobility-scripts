@@ -8,6 +8,12 @@ fi
 
 set -e
 
+export DEBIAN_FRONTEND=noninteractive
+apt update
+apt install -yq --no-install-recommends \
+    build-essential \
+    ""
+
 VERSION=v16.13.0
 DISTRO=linux-x64
 URL="https://nodejs.org/dist/${VERSION}/node-${VERSION}-${DISTRO}.tar.xz"
