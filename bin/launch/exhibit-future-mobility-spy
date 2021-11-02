@@ -10,6 +10,10 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
+INSTALL_DIR="/opt/future-mobility/future-mobility-spy"
+CONFIG_DIR="${HOME}/.config/future-mobility"
+
+
 OPTS=()
 if [ ! -z "${FUTURE_MOBILITY_SPY_DISPLAY}" ]
 then
@@ -17,12 +21,16 @@ then
 fi
 
 # Launch the exhibit in the background
-kiosk-browser $KIOSK_OPTS \
-    --kiosk \
+LOCAL_STORAGE_JSON="${CONFIG_DIR}/localStorage-spy.json" kiosk-browser $KIOSK_OPTS \
+    --use-minimal-chrome-cli \
+    --append-chrome-switch=--ignore-gpu-blacklist \
+    --append-chrome-switch=--disable-background-timer-throttling \
+    --append-chrome-switch=--autoplay-policy=no-user-gesture-required \
     --fullscreen \
     --hide-scrollbars \
     --reload-unresponsive 60 \
-    --serve /opt/future-mobility/future-mobility-spy/dist \
+    --preload  "${INSTALL_DIR}/preload.js"\
+    --serve "${INSTALL_DIR}/dist" \
     "${OPTS[@]}" \
     index.html &
 PID_UI=$!
