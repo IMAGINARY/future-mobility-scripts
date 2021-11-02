@@ -16,7 +16,6 @@ kiosk-browser $KIOSK_OPTS \
     --fullscreen \
     --cover-displays 0 \
     --hide-scrollbars \
-    --reload-idle "$(( 3 * 60 ))" \
     --reload-unresponsive 60 \
     --serve /opt/future-mobility/future-mobility \
     index.html &
