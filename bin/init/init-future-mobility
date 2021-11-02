@@ -11,15 +11,21 @@ echo "  XInput ID is ${TOUCH_SCREEN_XINPUT_ID}" 1>&2
 
 # Sometimes the display names contain an additional hyphen
 # First try DP[0-9]
-xrandr --output DP1 --primary --mode 1920x1080 # dashboard app
-xrandr --output DP2-1 --mode 1920x1200 --right-of DP1 # city app
-xrandr --output DP2-2 --mode 1920x1200 --right-of DP2-1 --rotate left # spy app
+xrandr  --output DP1 --primary --auto --output DP2-1 --auto --output DP2-2 --auto
+sleep 1
+xrandr \
+  --output DP1 --primary --mode 1920x1080 \
+  --output DP2-1 --mode 1920x1200 --right-of DP1 \
+  --output DP2-2 --mode 1920x1200 --right-of DP2-1 --rotate left
 xinput map-to-output "${TOUCH_SCREEN_XINPUT_ID}" DP1
 
 # Then DP-[0-9]
-xrandr --output DP-1 --primary --mode 1920x1080 # dashboard app
-xrandr --output DP-2-1 --mode 1920x1200 --right-of DP-1 # city app
-xrandr --output DP-2-2 --mode 1920x1200 --right-of DP-2-1 --rotate left # spy app
+xrandr  --output DP-1 --primary --auto --output DP-2-1 --auto --output DP-2-2 --auto
+sleep 1
+xrandr \
+  --output DP-1 --primary --mode 1920x1080 \
+  --output DP-2-1 --mode 1920x1200 --right-of DP-1 \
+  --output DP-2-2 --mode 1920x1200 --right-of DP-2-1 --rotate left
 xinput map-to-output "${TOUCH_SCREEN_XINPUT_ID}" DP-1
 
 exit 0
