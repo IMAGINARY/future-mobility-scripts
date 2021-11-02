@@ -10,14 +10,20 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
+OPTS=()
+if [ ! -z "${FUTURE_MOBILITY_APP_CONTROLS_DISPLAY}" ]
+then
+  OPTS=(--cover-displays "${FUTURE_MOBILITY_APP_CONTROLS_DISPLAY}")
+fi
+
 # Launch the exhibit in the background
 kiosk-browser $KIOSK_OPTS \
     --kiosk \
     --fullscreen \
-    --cover-displays 0 \
     --hide-scrollbars \
     --reload-unresponsive 60 \
     --serve /opt/future-mobility/future-mobility \
+    "${OPTS[@]}" \
     index.html &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
