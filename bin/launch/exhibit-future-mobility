@@ -18,13 +18,17 @@ exhibit-future-mobility-app-server &
 PID_APP_SERVER=$!
 PIDS="$PIDS $PID_APP_SERVER"
 
-exhibit-future-mobility-app-city &
+FUTURE_MOBILITY_APP_CONTROLS_DISPLAY=0 exhibit-future-mobility-app-controls &
+PID_APP_CONTROLS=$!
+PIDS="$PIDS $PID_APP_CONTROLS"
+
+FUTURE_MOBILITY_APP_CITY_DISPLAY=1 exhibit-future-mobility-app-city &
 PID_APP_CITY=$!
 PIDS="$PIDS $PID_APP_CITY"
 
-exhibit-future-mobility-app-conrols &
-PID_APP_CONTROLS=$!
-PIDS="$PIDS $PID_APP_CONTROLS"
+FUTURE_MOBILITY_SPY_DISPLAY=2 exhibit-future-mobility-spy &
+PID_SPY=$!
+PIDS="$PIDS $PID_SPY"
 
 # Wait for the exhibit to finish or until the signal trap is triggered
 wait -n $PIDS
