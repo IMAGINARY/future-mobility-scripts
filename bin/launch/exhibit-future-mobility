@@ -18,9 +18,9 @@ exhibit-future-mobility-app-server &
 PID_APP_SERVER=$!
 PIDS="$PIDS $PID_APP_SERVER"
 
-FUTURE_MOBILITY_APP_CONTROLS_DISPLAY=0 exhibit-future-mobility-app-controls &
-PID_APP_CONTROLS=$!
-PIDS="$PIDS $PID_APP_CONTROLS"
+FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY=0 exhibit-future-mobility-app-dashboard &
+PID_APP_DASHBOARD=$!
+PIDS="$PIDS $PID_APP_DASHBOARD"
 
 FUTURE_MOBILITY_APP_CITY_DISPLAY=1 exhibit-future-mobility-app-city &
 PID_APP_CITY=$!

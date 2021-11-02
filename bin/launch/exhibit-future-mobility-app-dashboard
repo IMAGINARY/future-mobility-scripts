@@ -11,9 +11,9 @@ function finish {
 trap finish SIGINT SIGTERM EXIT
 
 OPTS=()
-if [ ! -z "${FUTURE_MOBILITY_APP_CONTROLS_DISPLAY}" ]
+if [ ! -z "${FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY}" ]
 then
-  OPTS=(--cover-displays "${FUTURE_MOBILITY_APP_CONTROLS_DISPLAY}")
+  OPTS=(--cover-displays "${FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY}")
 fi
 
 # Launch the exhibit in the background
