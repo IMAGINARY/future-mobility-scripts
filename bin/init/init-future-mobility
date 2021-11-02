@@ -21,3 +21,5 @@ xrandr --output DP-1 --primary --mode 1920x1080 # control app
 xrandr --output DP-2-1 --mode 1920x1200 --right-of DP-1 # city app
 xrandr --output DP-2-2 --mode 1920x1200 --right-of DP-2-1 --rotate left # spy app
 xinput map-to-output "${TOUCH_SCREEN_XINPUT_ID}" DP-1
+
+exit 0
