@@ -24,7 +24,7 @@ kiosk-browser $KIOSK_OPTS \
     --reload-unresponsive 60 \
     --serve /opt/future-mobility/future-mobility \
     "${OPTS[@]}" \
-    index.html &
+    dashboard.html &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
 
