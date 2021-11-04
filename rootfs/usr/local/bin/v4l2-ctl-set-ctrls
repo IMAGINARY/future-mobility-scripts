@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/bash
 
 set -e
 
@@ -12,5 +12,9 @@ CTRLS_AUTO_CSV=$(tr '\n' ',' <<< "$CTRLS_AUTO")
 CTRLS_NO_AUTO_CSV=$(tr '\n' ',' <<< "$CTRLS_NO_AUTO")
 
 # We need to set the 'auto' controls first because they control if other controls are allowed to be set.
+echo "Applying the following auto-controls to $DEVICE:"
+echo "$CTRLS_AUTO" | sed -e 's/^/ /'
 v4l2-ctl --device "/dev/$DEVICE" --set-ctrl "$CTRLS_AUTO_CSV"
+echo "Applying the following controls to $DEVICE:"
+echo "$CTRLS_NO_AUTO" | sed -e 's/^/ /'
 v4l2-ctl --device "/dev/$DEVICE" --set-ctrl "$CTRLS_NO_AUTO_CSV"
