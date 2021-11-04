@@ -21,7 +21,7 @@ mkdir -p "${CONFIG_DIR}" && \
 
 # Launch the future-mobility server
 cd "${SERVER_INSTALL_DIR}" || exit 1
-PATH="$NODEJS_PATH:$PATH" npm run start -s "${CONFIG_DIR}/app-settings.yml" &
+PATH="$NODEJS_PATH:$PATH" node main.js -s "${CONFIG_DIR}/app-settings.yml" &
 PID_SERVER="$!"
 PIDS="$PIDS $PID_SERVER"
 
