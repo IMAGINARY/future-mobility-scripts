@@ -1,0 +1,43 @@
+#!/bin/bash
+
+if [ "$UID" -ne 0 ]
+then
+    >&2 echo "This script requires superuser priviledges."
+    exit 1
+fi
+
+set -e
+
+USAGE_STRING="Usage: $0 [--help|--confirm-rsync-overwrite]"
+
+if [[ "$*" == *--help* ]]; then
+    echo "$USAGE_STRING"
+    exit
+fi
+
+# cd into script directory
+cd "$(dirname -- "$0")"
+
+# sync the rootfs
+echo "Copying new files ..."
+rsync -ai --ignore-existing --exclude ".gitkeep" "../../rootfs/" /
+echo "... done."
+echo "Updating existing files ..."
+BATCH_FILE=$( mktemp )
+FILE_LIST=$(rsync -ai --only-write-batch="${BATCH_FILE}" --exclude ".gitkeep" "../../rootfs/" / )
+if [ -n "$FILE_LIST" ]; then
+    echo $FILE_LIST
+    if [[ "$*" == *--confirm-rsync-overwrite* ]]; then
+        read -p "Overwrite (y/N)? " CONFIRM
+    else
+        CONFIRM="y"
+    fi
+    
+    if [ "$CONFIRM" = "y" ]; then
+        sh "${BATCH_FILE}.sh"
+        echo "... done."
+    fi
+else
+    echo "All files up to date."
+fi
+rm "${BATCH_FILE}" "${BATCH_FILE}.sh"
