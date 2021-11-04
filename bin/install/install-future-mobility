@@ -13,9 +13,7 @@ install-future-mobility-spy
 # $ v4l2-ctl --all -d /dev/the-device-node
 UDEV_RULES_FILES=/etc/udev/rules.d/90-future-mobility.rules
 cat >"${UDEV_RULES_FILES}" <<EOL
-ATTR{index}=="0", SUBSYSTEM=="video4linux", KERNELS=="1-1:1.0", SUBSYSTEMS=="usb", SYMLINK+="video-top", PROGRAM="/usr/bin/env v4l2-ctl --set-ctrl power_line_frequency=1 --device /dev/%k"
-ATTR{index}=="0", SUBSYSTEM=="video4linux", KERNELS=="1-2:1.0", SUBSYSTEMS=="usb", SYMLINK+="video-bottom", PROGRAM="/usr/bin/env v4l2-ctl --set-ctrl power_line_frequency=1 --device /dev/%k"
+ATTR{index}=="0", SUBSYSTEM=="video4linux", KERNELS=="1-1:1.0", SUBSYSTEMS=="usb", SYMLINK+="video-top", PROGRAM="/usr/bin/env v4l2-ctl-set-ctrls \"%k\""
+ATTR{index}=="0", SUBSYSTEM=="video4linux", KERNELS=="1-2:1.0", SUBSYSTEMS=="usb", SYMLINK+="video-bottom", PROGRAM="/usr/bin/env v4l2-ctl-set-ctrls \"%k\""
 EOL
 udevadm trigger
-
-# TODO: setup config files

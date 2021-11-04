@@ -1,0 +1,16 @@
+#!/bin/bash
+
+set -e
+
+DEVICE="$1"
+CTRLS_FILE="/etc/v4l2-ctl/set-ctrl/$DEVICE"
+
+CTRLS=$(tr -d "[:blank:]" < "$CTRLS_FILE")
+CTRLS_AUTO=$(grep "auto=" <<< "$CTRLS")
+CTRLS_NO_AUTO=$(grep -v "auto=" <<< "$CTRLS")
+CTRLS_AUTO_CSV=$(tr '\n' ',' <<< "$CTRLS_AUTO")
+CTRLS_NO_AUTO_CSV=$(tr '\n' ',' <<< "$CTRLS_NO_AUTO")
+
+# We need to set the 'auto' controls first because they control if other controls are allowed to be set.
+v4l2-ctl --device "/dev/$DEVICE" --set-ctrl "$CTRLS_AUTO_CSV"
+v4l2-ctl --device "/dev/$DEVICE" --set-ctrl "$CTRLS_NO_AUTO_CSV"
