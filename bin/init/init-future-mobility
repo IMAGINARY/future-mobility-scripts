@@ -16,7 +16,7 @@ sleep 1
 xrandr \
   --output DP1 --primary --mode 1920x1080 \
   --output DP2-1 --mode 1920x1200 --right-of DP1 \
-  --output DP2-2 --mode 1920x1200 --right-of DP2-1 --rotate left
+  --output DP2-2 --mode 1920x1080 --right-of DP2-1 --rotate right
 xinput map-to-output "${TOUCH_SCREEN_XINPUT_ID}" DP1
 
 # Then DP-[0-9]
@@ -25,7 +25,7 @@ sleep 1
 xrandr \
   --output DP-1 --primary --mode 1920x1080 \
   --output DP-2-1 --mode 1920x1200 --right-of DP-1 \
-  --output DP-2-2 --mode 1920x1200 --right-of DP-2-1 --rotate left
+  --output DP-2-2 --mode 1920x1080 --right-of DP-2-1 --rotate right
 xinput map-to-output "${TOUCH_SCREEN_XINPUT_ID}" DP-1
 
 exit 0
