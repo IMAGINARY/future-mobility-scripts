@@ -4,7 +4,7 @@ set -e
 
 install-kiosk-browser
 
-COMMITISH="724ff8c"
+COMMITISH="e1548ae"
 REPO_URL="https://github.com/IMAGINARY/future-mobility-spy.git"
 INSTALL_DIR="/opt/future-mobility/future-mobility-spy"
 
