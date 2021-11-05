@@ -2,6 +2,10 @@
 # This wrapper script is supposed to be visible in ps -a resp. ps -u `id -u` to make
 # it easy to kill it (by a script or manually)
 
+INITIAL_DELAY=5
+echo "Waiting $INITIAL_DELAY to make XRandR setttings more robust"
+sleep "$INITIAL_DELAY"
+
 TOUCH_SCREEN_USB_PATH="/dev/input/by-path/pci-0000:00:14.0-usb-0:3.1:1.0-event"
 echo "Determining XInput of device connected to ${TOUCH_SCREEN_USB_PATH}" 1>&2
 TOUCH_SCREEN_DEVICE_NODE=$(readlink -f ${TOUCH_SCREEN_USB_PATH})
@@ -10,18 +14,15 @@ TOUCH_SCREEN_XINPUT_ID=$(xinput list --id-only | xargs -I {} bash -c "xinput lis
 echo "  XInput ID is ${TOUCH_SCREEN_XINPUT_ID}" 1>&2
 
 # Sometimes the display names contain an additional hyphen
-# First try DP[0-9]
+# First try DP[0-9], then DP-[0-9]
 xrandr  --output DP1 --primary --auto --output DP2-1 --auto --output DP2-2 --auto
-sleep 1
+xrandr  --output DP-1 --primary --auto --output DP-2-1 --auto --output DP-2-2 --auto
+sleep 2
 xrandr \
   --output DP1 --primary --mode 1920x1080 \
   --output DP2-1 --mode 1920x1200 --right-of DP1 \
   --output DP2-2 --mode 1920x1080 --right-of DP2-1 --rotate right
 xinput map-to-output "${TOUCH_SCREEN_XINPUT_ID}" DP1
-
-# Then DP-[0-9]
-xrandr  --output DP-1 --primary --auto --output DP-2-1 --auto --output DP-2-2 --auto
-sleep 1
 xrandr \
   --output DP-1 --primary --mode 1920x1080 \
   --output DP-2-1 --mode 1920x1200 --right-of DP-1 \
