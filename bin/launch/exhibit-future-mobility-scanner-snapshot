@@ -1,0 +1,31 @@
+#!/bin/bash
+# This wrapper script is supposed to be visible in ps -a resp. ps -u `id -u` to make
+# it easy to kill it (by a script or manually)
+
+PIDS=""
+function finish {
+    EXIT_CODE=$?
+    kill $PIDS >/dev/null 2>&1
+    exit $EXIT_CODE
+}
+trap finish SIGINT SIGTERM EXIT
+
+
+INSTALL_DIR="/opt/future-mobility/tag-grid-scanner"
+CONFIG_DIR="${HOME}/.config/future-mobility"
+
+# Create a settings file if it doesn't exist already
+mkdir -p "${CONFIG_DIR}" && \
+  cp -n "${INSTALL_DIR}/config.example.yaml" "${CONFIG_DIR}/scanner-config.yml"
+
+# Launch the tag-grid-scanner with the right config file
+tag-grid-scanner snapshot \
+  -c "${CONFIG_DIR}/scanner-config.yml" \
+  "$@" \
+  &
+PID_SCANNER="$!"
+PIDS="$PIDS $PID_SCANNER"
+
+# Wait for the scanner to finish or until the signal trap is triggered
+wait $PID_SCANNER
+exit $?
