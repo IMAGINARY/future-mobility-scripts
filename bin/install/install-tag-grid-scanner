@@ -7,7 +7,7 @@ export DEBIAN_FRONTEND=noninteractive
 # Update the list of available packages
 apt update
 
-COMMITISH="49a8971"
+COMMITISH="e8c1216"
 REPO_URL="https://github.com/IMAGINARY/tag-grid-scanner.git"
 INSTALL_DIR="/opt/future-mobility/tag-grid-scanner"
 
