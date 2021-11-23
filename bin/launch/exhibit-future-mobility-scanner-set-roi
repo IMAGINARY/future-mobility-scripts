@@ -11,7 +11,7 @@ function finish {
 trap finish SIGINT SIGTERM EXIT
 
 
-exhibit-future-mobility-scanner --ignore-scale --rate-limit inf &
+exhibit-future-mobility-scanner --ignore-scale --rate-limit inf --no-notify &
 PID_SCANNER="$!"
 PIDS="$PIDS $PID_SCANNER"
 
