@@ -12,6 +12,10 @@ bootstrap() {
     # don't prompt during installations
     export DEBIAN_FRONTEND=noninteractive
 
+    # Add Xpra repository
+    wget -q https://xpra.org/gpg.asc -O- | apt-key add -
+    wget --directory-prefix=/etc/apt/sources.list.d/ https://xpra.org/repos/impish/xpra.list
+
     # Update the list of available packages
     apt update
 
@@ -45,6 +49,8 @@ bootstrap() {
         ranger \
         vmpk \
         v4l-utils \
+        xpra \
+        xterm \
         '' # dummy entry to terminate the list
 
     # FIXME:    kmidimon \
