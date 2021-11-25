@@ -5,7 +5,7 @@ set -e
 install-kiosk-browser
 install-future-mobility-nodejs
 
-COMMITISH="v0.17.0"
+COMMITISH="v0.17.1"
 REPO_URL="https://github.com/IMAGINARY/future-mobility.git"
 INSTALL_DIR="/opt/future-mobility/future-mobility"
 NODEJS_BIN_DIR="/opt/future-mobility/nodejs/bin"
