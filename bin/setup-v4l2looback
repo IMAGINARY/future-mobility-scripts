@@ -1,0 +1,11 @@
+#!/bin/bash
+VIDEO_BOTTOM=$(readlink -f /dev/video-bottom)
+VIDEO_TOP=$(readlink -f /dev/video-top)
+
+modprobe v4l2loopback devices=2 video_nr=10,11 exclisive_caps=1,1
+
+nohup gst-launch-1.0 --no-position v4l2src "device=$VIDEO_BOTTOM" ! capsfilter caps="image/jpeg, width=1920, height=1080" ! avdec_mjpeg ! videoconvert ! v4l2sink device=/dev/video10 &
+ln -sf /dev/video10 /dev/video-bottom
+
+nohup gst-launch-1.0 --no-position v4l2src "device=$VIDEO_TOP" ! capsfilter caps="image/jpeg, width=1920, height=1080" ! avdec_mjpeg ! videoconvert ! v4l2sink device=/dev/video11 &
+ln -sf /dev/video11 /dev/video-top

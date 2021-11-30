@@ -49,6 +49,8 @@ bootstrap() {
         ranger \
         vmpk \
         v4l-utils \
+        v4l2loopback-dkms \
+        v4l2loopback-utils \
         xpra \
         xterm \
         '' # dummy entry to terminate the list
