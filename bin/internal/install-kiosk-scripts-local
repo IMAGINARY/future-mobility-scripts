@@ -29,6 +29,9 @@ cd "$(dirname -- "$0")"
 # systemctl reenable --now systemd-poweroff.timer
 # systemctl start systemd-poweroff.timer
 
+# disable swapping
+./disable-swap
+
 # modify configuration files on the host
 ./modify-os-cfg
 

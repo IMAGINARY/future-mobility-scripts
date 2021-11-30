@@ -1,0 +1,13 @@
+#!/bin/bash
+
+swapoff /swapfile
+rf /swapfile
+
+augtool -As <<EOL
+# Load fstab lens
+transform Fstab.lns incl /etc/fstab
+load
+
+# TOD: remove entry of 'type' 'swap'
+rm /files/etc/*[type="swap"]
+EOL
