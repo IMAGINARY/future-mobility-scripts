@@ -1,0 +1,40 @@
+#!/bin/bash
+# This wrapper script is supposed to be visible in ps -a resp. ps -u `id -u` to make
+# it easy to kill it (by a script or manually)
+
+PIDS=""
+function finish {
+    EXIT_CODE=$?
+    kill $PIDS >/dev/null 2>&1
+    exit $EXIT_CODE
+}
+trap finish SIGINT SIGTERM EXIT
+
+function snapshot {
+  kill "$PID_SCANNER" >/dev/null 2>&1  
+}
+trap snapshot SIGUSR1
+
+while true; do
+  PIDS=""
+  
+  exhibit-future-mobility-scanner --no-gui &
+  PID_SCANNER="$!"
+  PIDS="$PIDS $PID_SCANNER"
+
+  sleep 30m &
+  PID_SLEEP="$!"
+  PIDS="$PIDS $PID_SLEEP"
+  wait $PID_SLEEP
+
+  kill $PID_SCANNER
+  
+  SNAPSHOT_DIR="/tmp/tag-grid-scanner-snapshots"
+  mkdir -p "$SNAPSHOT_DIR"
+  DATE=$(date "+%Y-%m-%d-%H%M%S")
+  exhibit-future-mobility-scanner-snaspshot \
+    --headless --wait 2 --roi \
+    "$SNAPSHOT_DIR/roi-$DATE.jpg"
+done
+
+exit $?
