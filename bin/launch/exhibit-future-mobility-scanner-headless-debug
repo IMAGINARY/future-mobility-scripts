@@ -18,6 +18,13 @@ trap snapshot SIGUSR1
 while true; do
   PIDS=""
   
+  SNAPSHOT_DIR="/tmp/tag-grid-scanner-snapshots"
+  mkdir -p "$SNAPSHOT_DIR"
+  DATE=$(date "+%Y-%m-%d-%H%M%S")
+  exhibit-future-mobility-scanner-snapshot \
+    --headless --wait 2 --roi \
+    "$SNAPSHOT_DIR/roi-$DATE.jpg"
+
   exhibit-future-mobility-scanner --no-gui &
   PID_SCANNER="$!"
   PIDS="$PIDS $PID_SCANNER"
@@ -28,13 +35,6 @@ while true; do
   wait $PID_SLEEP
 
   kill $PID_SCANNER
-  
-  SNAPSHOT_DIR="/tmp/tag-grid-scanner-snapshots"
-  mkdir -p "$SNAPSHOT_DIR"
-  DATE=$(date "+%Y-%m-%d-%H%M%S")
-  exhibit-future-mobility-scanner-snaspshot \
-    --headless --wait 2 --roi \
-    "$SNAPSHOT_DIR/roi-$DATE.jpg"
 done
 
 exit $?
