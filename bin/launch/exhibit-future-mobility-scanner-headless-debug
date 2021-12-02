@@ -25,6 +25,10 @@ while true; do
     --headless --wait 2 --roi \
     "$SNAPSHOT_DIR/roi-$DATE.jpg"
 
+  exhibit-future-mobility-scanner-snapshot \
+    --headless --wait 2 \
+    "$SNAPSHOT_DIR/video-bottom-$DATE.jpg"
+
   exhibit-future-mobility-scanner --no-gui &
   PID_SCANNER="$!"
   PIDS="$PIDS $PID_SCANNER"
