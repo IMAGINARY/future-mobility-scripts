@@ -1,2 +1,3 @@
 #!/bin/bash
+# shellcheck source=./internal/action-default
 . "${BASH_SOURCE%/*}/internal/action-default"
