@@ -29,6 +29,9 @@ cd "$(dirname -- "$0")"
 # systemctl reenable --now systemd-poweroff.timer
 # systemctl start systemd-poweroff.timer
 
+# restart NetworkManager to apply changes made by sync-rootfs
+systemctl restart NetworkManager
+
 # modify configuration files on the host
 ./modify-os-cfg
 
