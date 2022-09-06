@@ -30,6 +30,7 @@ load
 set /files/etc/gdm3/custom.conf/daemon/AutomaticLoginEnable "true"
 set /files/etc/gdm3/custom.conf/daemon/AutomaticLogin "kiosk"
 set /files/var/lib/AccountsService/users/kiosk/User/XSession "openbox"
+set /files/var/lib/AccountsService/users/kiosk/User/Session "openbox"
 
 # For some reason, GRUB recordfail is triggered after almost every reboot.
 # I don't know how to fix it, so I reduce the boot delay introduced by
