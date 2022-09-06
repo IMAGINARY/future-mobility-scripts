@@ -332,7 +332,7 @@ do_hidecursor_menu() {
     local MENU_TEXT
     HIDECURUSOR_STATUS_TEXT=$(([ "$HIDE_CURSOR" = "true" ] && echo "ENABLED") || echo "DISABLED")
     MENU_TEXT="Hide or show the system cursor while the exhibit is running."
-    MENU_TEXT="Note that the exhibit itself might apply its own cursor settings.\n"
+    MENU_TEXT+="Note that the exhibit itself might apply its own cursor settings.\n"
     MENU_TEXT+="\n"
     MENU_TEXT+="It looks like cursor hiding is currently ${HIDECURUSOR_STATUS_TEXT}.\n"
     MENU_TEXT+="\n"
