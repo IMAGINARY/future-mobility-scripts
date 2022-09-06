@@ -42,6 +42,7 @@ PIDS="$PIDS $!"
 # Run a compositor in the background for dealing with vsync and tearing
 # Should be done after screen setup (e.g. in init-* scripts)
 compton --backend glx --glx-swap-method -1 --vsync opengl-swc &
+picom --backend=glx --use-damage --vsync &
 PIDS="$PIDS $!"
 
 # Set wallpaper
