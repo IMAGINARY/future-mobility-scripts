@@ -13,9 +13,17 @@ INSTALL_DIR="/opt/future-mobility/tag-grid-scanner"
 
 "${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO_URL" "$INSTALL_DIR"
 
+# Python 3.9 is not available via the official Ubuntu 22.04 repos, so we install
+# it via a PPA.
+add-apt-repository --yes ppa:deadsnakes/ppa
 apt install -yq --no-install-recommends \
-    pipenv \
+    pipx \
+    python3.9 \
+    python3.9-distutils \
     '' # dummy entry to terminate the list
+
+# Install pipenv from PyPI because the one packages with Ubuntu 22.04 is broken.
+PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install pipenv==2023.2.4
 
 cd "$INSTALL_DIR" || exit 1
 PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
