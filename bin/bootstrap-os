@@ -68,7 +68,7 @@ bootstrap() {
     if [[ "$*" == *--confirm-rsync-overwrite* ]]; then
         INSTALL_KIOSK_SCRIPTS_ARGS+=( "--confirm-rsync-overwrite" )
     fi
-    curl -L https://github.com/IMAGINARY/iamai-scripts/raw/master/bin/install/install-kiosk-scripts | bash -s -- "${INSTALL_KIOSK_SCRIPTS_ARGS[@]}"
+    curl -L https://raw.githubusercontent.com/IMAGINARY/future-mobility-scripts/main/bin/install/install-kiosk-scripts | bash -s -- "${INSTALL_KIOSK_SCRIPTS_ARGS[@]}"
     source "/opt/kiosk-scripts/rootfs/etc/profile.d/kiosk-bin-path.sh"
 
     # Install dependencies common to many exhibits
