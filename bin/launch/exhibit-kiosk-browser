@@ -2,12 +2,18 @@
 # This wrapper script is supposed to be visible in ps -a resp. ps -u `id -u` to make
 # it easy to kill it (by a script or manually)
 
+PIDS=""
+function finish {
+    EXIT_CODE=$?
+    kill $PIDS >/dev/null 2>&1
+    exit $EXIT_CODE
+}
+trap finish SIGINT SIGTERM EXIT
+
 # Launch the exhibit in the background
 kiosk-browser $KIOSK_OPTS &
 PID=$!
-
-# Kill the exhibit if it is still running whe the script exits
-trap "kill $PID >/dev/null 2>&1" SIGINT SIGTERM EXIT
+PIDS="$PIDS $PID"
 
 # Wait for the exhibit to finish or until the signal trap is triggered
-wait
+wait "$PID"

@@ -5,6 +5,7 @@
 DIALOG=whiptail
 ASK_TO_REBOOT=${ASK_TO_REBOOT:-0}
 CONFIG_FILE="/etc/default/kiosk"
+ENVIRONMENT_FILE="/etc/profile.d/kiosk-custom-env.sh"
 
 reload_config_file() {
     . "$CONFIG_FILE"
@@ -332,7 +333,7 @@ do_hidecursor_menu() {
     local MENU_TEXT
     HIDECURUSOR_STATUS_TEXT=$(([ "$HIDE_CURSOR" = "true" ] && echo "ENABLED") || echo "DISABLED")
     MENU_TEXT="Hide or show the system cursor while the exhibit is running."
-    MENU_TEXT="Note that the exhibit itself might apply its own cursor settings.\n"
+    MENU_TEXT+="Note that the exhibit itself might apply its own cursor settings.\n"
     MENU_TEXT+="\n"
     MENU_TEXT+="It looks like cursor hiding is currently ${HIDECURUSOR_STATUS_TEXT}.\n"
     MENU_TEXT+="\n"
@@ -345,6 +346,23 @@ do_hidecursor_menu() {
         255) return 0 ;;
         *) error_unrecognized_option "$RET" ;;
     esac || "$DIALOG" --msgbox "Error applying cursor hiding setting" 0 0
+}
+
+do_environment_menu() {
+  "$DIALOG" --title "Environment variables" \
+      --yesno "Do you want to edit the file ${ENVIRONMENT_FILE}?\n\nThe file is a shell script that will be sourced during each login. "export" the variables you want to add to the environment." 0 0
+  case "$?" in
+      0) edit_environment ;;
+      1) return 0 ;;
+      255) return 0 ;;
+      *) error_unrecognized_option "$RET" ;;
+  esac || "$DIALOG" --msgbox "Error editing environment variables" 0 0
+}
+
+edit_environment() {
+  nano "${ENVIRONMENT_FILE}"
+  "$DIALOG" --title "Environment variables" \
+      --msgbox "The changes to the environment have not been applied yet. Either reboot or execute\n\n. \"${ENVIRONMENT_FILE}\"\n\nin your shell." 0 0
 }
 
 do_graphics_and_input_menu() {
@@ -477,10 +495,11 @@ do_main_menu() {
         --ok-button Select \
         "1 Exhibit" "Configure which exhibit to start automatically" \
         "2 Hardening" "Harden the station" \
-        "3 Graphics & Input" "Configure graphics and input devices" \
-        "4 Localization" "Set up language and regional settings to match your location" \
-        "5 Update" "Update exhibits and install scripts" \
-        "6 System Information" "Display operating system and hardware information" \
+        "3 Environment" "Set station-specific environment variables" \
+        "4 Graphics & Input" "Configure graphics and input devices" \
+        "5 Localization" "Set up language and regional settings to match your location" \
+        "6 Update" "Update exhibits and install scripts" \
+        "7 System Information" "Display operating system and hardware information" \
         3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ]; then
@@ -489,10 +508,11 @@ do_main_menu() {
         case "$FUN" in
             1\ *) do_exhibit_menu ;;
             2\ *) do_hardening_menu ;;
-            3\ *) do_graphics_and_input_menu ;;
-            4\ *) do_localization_menu ;;
-            5\ *) do_update_menu ;;
-            6\ *) do_system_information_menu ;;
+            3\ *) do_environment_menu ;;
+            4\ *) do_graphics_and_input_menu ;;
+            5\ *) do_localization_menu ;;
+            6\ *) do_update_menu ;;
+            7\ *) do_system_information_menu ;;
             *) error_unrecognized_option "$FUN" ;;
         esac || error_processing_option "$FUN"
     fi
