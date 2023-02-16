@@ -13,8 +13,8 @@ bootstrap() {
     export DEBIAN_FRONTEND=noninteractive
 
     # Add Xpra repository
-    wget -q https://xpra.org/gpg.asc -O- | apt-key add -
-    wget --directory-prefix=/etc/apt/sources.list.d/ https://xpra.org/repos/impish/xpra.list
+    wget -q -O "/usr/share/keyrings/xpra.asc" https://xpra.org/gpg.asc
+    wget -q -O "/etc/apt/sources.list.d/xpra.sources" https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/jammy/xpra.sources
 
     # Update the list of available packages
     apt update
