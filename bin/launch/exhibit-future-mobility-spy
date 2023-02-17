@@ -22,6 +22,7 @@ fi
 
 # Launch the exhibit in the background
 LOCAL_STORAGE_JSON="${CONFIG_DIR}/localStorage-spy.json" kiosk-browser $KIOSK_OPTS \
+    --app-name-suffix=future-mobility-app-spy \
     --use-minimal-chrome-cli \
     --append-chrome-switch=--ignore-gpu-blacklist \
     --append-chrome-switch=--disable-background-timer-throttling \
