@@ -10,6 +10,33 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
+
+# Configuration
+FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY_DEFAULT="0"
+if [[ -z "${FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY}" ]]; then
+  echo "FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY environment variable not set. Using default value: ${FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY}"
+  export FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY="$FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY_DEFAULT"
+else
+  echo "Using FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY environment variable. Value: ${FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY}"
+fi
+
+FUTURE_MOBILITY_APP_CITY_DISPLAY_DEFAULT="1"
+if [[ -z "${FUTURE_MOBILITY_APP_CITY_DISPLAY}" ]]; then
+  echo "FUTURE_MOBILITY_APP_CITY_DISPLAY environment variable not set. Using default value: ${FUTURE_MOBILITY_APP_CITY_DISPLAY_DEFAULT}"
+  export FUTURE_MOBILITY_APP_CITY_DISPLAY="$FUTURE_MOBILITY_APP_CITY_DISPLAY_DEFAULT"
+else
+  echo "Using FUTURE_MOBILITY_APP_CITY_DISPLAY environment variable. Value: ${FUTURE_MOBILITY_APP_CITY_DISPLAY}"
+fi
+
+FUTURE_MOBILITY_SPY_DISPLAY_DEFAULT="2"
+if [[ -z "${FUTURE_MOBILITY_SPY_DISPLAY}" ]]; then
+  echo "FUTURE_MOBILITY_SPY_DISPLAY environment variable not set. Using default value: ${FUTURE_MOBILITY_SPY_DISPLAY_DEFAULT}"
+  export FUTURE_MOBILITY_SPY_DISPLAY="$FUTURE_MOBILITY_SPY_DISPLAY_DEFAULT"
+else
+  echo "Using FUTURE_MOBILITY_SPY_DISPLAY environment variable. Value: ${FUTURE_MOBILITY_SPY_DISPLAY}"
+fi
+
+
 exhibit-future-mobility-scanner-headless-debug &
 PID_SCANNER=$!
 PIDS="$PIDS $PID_SCANNER"
@@ -20,17 +47,17 @@ PIDS="$PIDS $PID_APP_SERVER"
 
 sleep 1
 
-FUTURE_MOBILITY_SPY_DISPLAY=2 exhibit-future-mobility-spy &
+exhibit-future-mobility-spy &
 PID_SPY=$!
 PIDS="$PIDS $PID_SPY"
 
 sleep 2
 
-FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY=0 exhibit-future-mobility-app-dashboard &
+exhibit-future-mobility-app-dashboard &
 PID_APP_DASHBOARD=$!
 PIDS="$PIDS $PID_APP_DASHBOARD"
 
-FUTURE_MOBILITY_APP_CITY_DISPLAY=1 exhibit-future-mobility-app-city &
+exhibit-future-mobility-app-city &
 PID_APP_CITY=$!
 PIDS="$PIDS $PID_APP_CITY"
 
