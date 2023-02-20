@@ -11,7 +11,15 @@ function finish {
 trap finish SIGINT SIGTERM EXIT
 
 INSTALL_DIR="/opt/future-mobility/future-mobility-spy"
-CONFIG_DIR="${HOME}/.config/future-mobility"
+
+CONFIG_FILE_DEFAULT="${HOME}/.config/future-mobility/localStorage-spy.json"
+CONFIG_FILE="${CONFIG_FILE:-$CONFIG_FILE_DEFAULT}"
+
+if [[ -z "${FUTURE_MOBILITY_SPY_CONFIG_FILE}" ]]; then
+  echo "FUTURE_MOBILITY_SPY_CONFIG_FILE environment variable not set. Using default value: ${CONFIG_FILE}"
+else
+  echo "Using FUTURE_MOBILITY_SPY_CONFIG_FILE environment variable. Value: ${CONFIG_FILE}"
+fi
 
 
 OPTS=()
@@ -21,7 +29,7 @@ then
 fi
 
 # Launch the exhibit in the background
-LOCAL_STORAGE_JSON="${CONFIG_DIR}/localStorage-spy.json" kiosk-browser $KIOSK_OPTS \
+LOCAL_STORAGE_JSON="${CONFIG_FILE}" kiosk-browser $KIOSK_OPTS \
     --app-name-suffix=future-mobility-app-spy \
     --use-minimal-chrome-cli \
     --append-chrome-switch=--ignore-gpu-blacklist \
