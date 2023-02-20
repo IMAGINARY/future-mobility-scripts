@@ -36,6 +36,13 @@ else
   echo "Using FUTURE_MOBILITY_SPY_DISPLAY environment variable. Value: ${FUTURE_MOBILITY_SPY_DISPLAY}"
 fi
 
+FUTURE_MOBILITY_SPY_DEFAULT=true
+if [[ -z "${FUTURE_MOBILITY_SPY}" ]]; then
+  echo "FUTURE_MOBILITY_SPY environment variable not set. Using default value: ${FUTURE_MOBILITY_SPY_DEFAULT}"
+  export FUTURE_MOBILITY_SPY="$FUTURE_MOBILITY_SPY_DEFAULT"
+else
+  echo "Using FUTURE_MOBILITY_SPY environment variable. Value: ${FUTURE_MOBILITY_SPY}"
+fi
 
 
 if [[ "${FUTURE_MOBILITY_DEBUG}" == true ]]; then
@@ -54,9 +61,11 @@ PIDS="$PIDS $PID_APP_SERVER"
 
 sleep 1
 
-exhibit-future-mobility-spy &
-PID_SPY=$!
-PIDS="$PIDS $PID_SPY"
+if [[ "${FUTURE_MOBILITY_SPY}" == true ]]; then
+  exhibit-future-mobility-spy &
+  PID_SPY=$!
+  PIDS="$PIDS $PID_SPY"
+fi
 
 sleep 2
 
