@@ -15,10 +15,19 @@ function snapshot {
 }
 trap snapshot SIGUSR1
 
+SNAPSHOT_DIR_DEFAULT="/tmp/tag-grid-scanner-snapshots"
+SNAPSHOT_DIR="${SNAPSHOT_DIR:-$SNAPSHOT_DIR_DEFAULT}"
+
+if [[ -z "${FUTURE_MOBILITY_DEBUG_SNAPSHOT_DIR}" ]]; then
+  echo "FUTURE_MOBILITY_DEBUG_SNAPSHOT_DIR environment variable not set. Using default value: ${SNAPSHOT_DIR}"
+else
+  echo "Using FUTURE_MOBILITY_DEBUG_SNAPSHOT_DIR environment variable. Value: ${SNAPSHOT_DIR}"
+fi
+
+
 while true; do
   PIDS=""
   
-  SNAPSHOT_DIR="/tmp/tag-grid-scanner-snapshots"
   mkdir -p "$SNAPSHOT_DIR"
   DATE=$(date "+%Y-%m-%d-%H%M%S")
   exhibit-future-mobility-scanner-snapshot \
