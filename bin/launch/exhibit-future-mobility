@@ -37,9 +37,16 @@ else
 fi
 
 
-exhibit-future-mobility-scanner-headless &
-PID_SCANNER=$!
-PIDS="$PIDS $PID_SCANNER"
+
+if [[ "${FUTURE_MOBILITY_DEBUG}" == true ]]; then
+  exhibit-future-mobility-scanner-headless-debug &
+  PID_SCANNER=$!
+  PIDS="$PIDS $PID_SCANNER"
+else
+  exhibit-future-mobility-scanner-headless &
+  PID_SCANNER=$!
+  PIDS="$PIDS $PID_SCANNER"
+fi
 
 exhibit-future-mobility-app-server &
 PID_APP_SERVER=$!
