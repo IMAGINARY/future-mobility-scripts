@@ -434,9 +434,11 @@ do_select_installer() {
         /opt/kiosk-scripts/bin/install -perm -a=x -name install-\*
 }
 
-do_update_menu()  {
+do_run_install_kiosk_scripts()  {
     local MSG_TEXT CMD RET
-    MSG_TEXT="New versions of exhibits will only be installed if their install scripts are updated beforehand via the install-kiosk-scripts script.\n"
+    MSG_TEXT="New versions of exhibits can only be installed if their install scripts are updated beforehand via the install-kiosk-scripts script.\n"
+    MSG_TEXT+="Some of your local configuration may be overwritten during the update.\n"
+    MSG_TEXT+="It is not advised to run the script in a chroot.\n"
     MSG_TEXT+="\n"
     MSG_TEXT+="Run install-kiosk-scripts now?"
     "$DIALOG" --yesno "$MSG_TEXT" 0 0
@@ -454,6 +456,65 @@ do_update_menu()  {
         else
             "$DIALOG" --msgbox "An error occurred during installation. Please check the output on the terminal." 0 0 3>&1 1>&2 2>&3
         fi
+    fi
+}
+
+do_update_kiosk_script_files() {
+  "${BASH_SOURCE%/*}/internal/install-source-from-git" "$KIOSK_SCRIPTS_COMMITISH" "$KIOSK_SCRIPTS_REPO" "/opt/kiosk-scripts"
+}
+
+do_enter_kiosk_scripts_repo() {
+    "$DIALOG" --title "kiosk-scripts repository selection" \
+        --inputbox "Enter a URL to a git repository" 0 $D_WIDTH "" \
+        --cancel-button Back \
+        3>&1 1>&2 2>&3
+}
+
+do_set_kiosk_scripts_repo() {
+  REPO=$(do_enter_kiosk_scripts_repo)
+  if [ $? -eq 0 ]; then
+    set_config_variable "KIOSK_SCRIPTS_REPO" "$REPO" \
+      || "$DIALOG" --msgbox "Error setting kiosk-scripts repository URL" 0 0
+  fi
+}
+
+do_enter_kiosk_scripts_commitish() {
+    "$DIALOG" --title "kiosk-scripts branch or commit hash" \
+        --inputbox "Enter a branch name or commit hash (\"commitish\")" 0 $D_WIDTH "" \
+        --cancel-button Back \
+        3>&1 1>&2 2>&3
+}
+
+do_set_kiosk_scripts_commitish() {
+  REPO=$(do_enter_kiosk_scripts_repo)
+  if [ $? -eq 0 ]; then
+    set_config_variable "KIOSK_SCRIPTS_REPO" "$REPO" \
+      || "$DIALOG" --msgbox "Error setting kiosk-scripts branch or commit hash" 0 0
+  fi
+}
+
+do_update_kiosk_script_menu() {
+    local FUN RET
+    FUN=$("$DIALOG" --title "Kiosk-scripts updater" \
+        --menu "Configure and run kiosk-scripts updater" 0 0 0 \
+        --cancel-button Back \
+        --ok-button Select \
+        "1 Update files and install" "Update the kiosk-scripts from the repository and execute installer" \
+        "2 Update files only" "Update the kiosk-scripts from the repository" \
+        "3 Set repository" "Set the repository URL to pull the kiosk-scripts from" \
+        "4 Set branch or commit hash" "Set the branch or commit hash of the kiosk-scripts repository" \
+        3>&1 1>&2 2>&3)
+    RET=$?
+    if [ $RET -eq 1 ]; then
+        return 0
+    elif [ $RET -eq 0 ]; then
+        case "$FUN" in
+            1\ *) do_run_install_kiosk_scripts ;;
+            2\ *) do_update_kiosk_script_files ;;
+            3\ *) do_set_kiosk_scripts_repo ;;
+            4\ *) do_set_kiosk_scripts_commitish ;;
+            *) error_unrecognized_option "$FUN" ;;
+        esac || error_processing_option "$FUN"
     fi
 }
 
@@ -511,7 +572,7 @@ do_main_menu() {
             3\ *) do_environment_menu ;;
             4\ *) do_graphics_and_input_menu ;;
             5\ *) do_localization_menu ;;
-            6\ *) do_update_menu ;;
+            6\ *) do_update_kiosk_script_menu ;;
             7\ *) do_system_information_menu ;;
             *) error_unrecognized_option "$FUN" ;;
         esac || error_processing_option "$FUN"

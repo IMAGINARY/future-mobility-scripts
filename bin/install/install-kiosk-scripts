@@ -8,6 +8,25 @@ fi
 
 set -e
 
+# Source config file
+. "/etc/default/kiosk"
+
+if [[ -z "${KIOSK_SCRIPTS_REPO}" ]]; then
+  echo "No kiosk-script repository defined. Please set KIOSK_SCRIPTS_REPO, e.g. via kiosk-config."
+  exit 1
+fi
+
+REPO="$KIOSK_SCRIPTS_REPO"
+
+COMMITISH_DEFAULT="main"
+COMMITISH="${KIOSK_SCRIPTS_COMMITISH:-$COMMITISH_DEFAULT}"
+if [[ -z "${KIOSK_SCRIPTS_COMMITISH}" ]]; then
+  echo "KIOSK_SCRIPTS_COMMITISH environment variable not set. Using default value: ${COMMITISH}"
+else
+  echo "Using KIOSK_SCRIPTS_COMMITISH environment variable. Value: ${COMMITISH}"
+fi
+
+
 install() {
     # don't prompt during installations
     export DEBIAN_FRONTEND=noninteractive
@@ -21,13 +40,12 @@ install() {
 
     # retrieve files via git
     INSTALL_DIR="/opt/kiosk-scripts"
-    BRANCH="main"
     mkdir -p "$INSTALL_DIR"
     cd "$INSTALL_DIR"
     git init
 
-    # Checkout the requested branch
-    git checkout -f "$BRANCH" 2> /dev/null || git checkout -f -b "$BRANCH"
+    # Checkout the requested commit or branch
+    git checkout -f "$COMMITISH" 2> /dev/null || git checkout -f -b "$COMMITISH"
 
     if [[ `git status --porcelain` ]]; then
         git reset --hard
@@ -35,20 +53,20 @@ install() {
         exec "./bin/install/install-kiosk-scripts" "$@"
     else
         # no local changes, check for remote changes
-        git remote remove origin &> /dev/null || true
-        git remote add origin https://github.com/IMAGINARY/future-mobility-scripts.git
-        git fetch --tags origin
 
         EMPTY_TREE_SHA=$(git hash-object -t tree --stdin < /dev/null)
 
         # When the local repo is empty, use the SHA of the empty repo, because
         # git rev-parse doesn't work in this situation
-        LOCAL_SHA=$( ( git rev-parse "$BRANCH" &> /dev/null && git rev-parse "$BRANCH" ) || echo "$EMPTY_TREE_SHA" )
-        REMOTE_SHA=$(git rev-parse "origin/$BRANCH")
+        HASH_BEFORE_UPDATE=$( ( git rev-parse "$COMMITISH" &> /dev/null && git rev-parse "$COMMITISH" ) || echo "$EMPTY_TREE_SHA" )
 
-        if [ ! "$LOCAL_SHA" = "$REMOTE_SHA" ]; then
-            git reset --hard "origin/$BRANCH"
-            git checkout -f "origin/$BRANCH"
+        "${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO" "/opt/kiosk-scripts"
+
+        # When the local repo is empty, use the SHA of the empty repo, because
+        # git rev-parse doesn't work in this situation
+        HASH_AFTER_UPDATE=$( ( git rev-parse "$COMMITISH" &> /dev/null && git rev-parse "$COMMITISH" ) || echo "$EMPTY_TREE_SHA" )
+
+        if [ ! "$HASH_BEFORE_UPDATE" = "$HASH_AFTER_UPDATE" ]; then
             echo "There were remote changes. Re-running ..."
             exec "./bin/install/install-kiosk-scripts" "$@"
         fi

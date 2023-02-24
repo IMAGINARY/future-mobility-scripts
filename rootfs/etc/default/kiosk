@@ -1,6 +1,12 @@
 # Default settings for kiosk scripts. This file is sourced by various scripts
 # from /opt/kiosk-scripts.
 
+# URL of the git repository for installing kiosk-scripts
+KIOSK_SCRIPTS_REPO="https://github.com/IMAGINARY/future-mobility-scripts.git"
+
+# Branch or commit SHA from the KIOSK_SCRIPTS_REPO to use for installing
+KIOSK_SCRIPTS_COMMITISH="main"
+
 # Init script to run before launching the exhibit
 INIT_EXHIBIT=
 
