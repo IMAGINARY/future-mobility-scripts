@@ -25,6 +25,27 @@ ensure_root_privileges() {
     fi
 }
 
+get_script_dirname() {
+    local SOURCE DIR
+    SOURCE=${BASH_SOURCE[0]}
+    while [ -L "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symlink
+        DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+        SOURCE=$(readlink "$SOURCE")
+        [[ $SOURCE != /* ]] && SOURCE=$DIR/$SOURCE # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
+    done
+    DIR=$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )
+    echo "$DIR"
+}
+
+do_get_git_rev() {
+    local REV
+    REV=$(git -C "$(get_script_dirname)" rev-parse --short HEAD)
+    if [[ $(git -C "$(get_script_dirname)" status --porcelain) ]]; then
+        REV+="-dirty"
+    fi
+    echo "$REV"
+}
+
 calc_wt_size() {
   # NOTE: it's tempting to redirect stderr to /dev/null, so supress error 
   # output from tput. However in this case, tput detects neither stdout or 
@@ -463,7 +484,7 @@ do_install_exhibit_menu()  {
 }
 
 do_install_kiosk_scripts() {
-    local MSG_TEXT CMD RET
+    local MSG_TEXT RET
     MSG_TEXT=""
     MSG_TEXT+="Some of your local configuration may be overwritten during the update.\n"
     MSG_TEXT+="Running this update in a chroot should work.\n"
@@ -485,7 +506,7 @@ do_install_kiosk_scripts() {
 }
 
 do_update_kiosk_script_files() {
-    local MSG_TEXT CMD RET
+    local MSG_TEXT RET
     MSG_TEXT=""
     MSG_TEXT+="Some of your local configuration may be overwritten during the update.\n"
     MSG_TEXT+="Running this update in a chroot should work.\n"
@@ -496,7 +517,7 @@ do_update_kiosk_script_files() {
     MSG_TEXT+="Update the kiosk-scripts files now?"
     "$DIALOG" --yesno "$MSG_TEXT" 0 0
     if [ $? -eq 0 ]; then # yes
-      "${BASH_SOURCE%/*}/internal/install-source-from-git" "$KIOSK_SCRIPTS_COMMITISH" "$KIOSK_SCRIPTS_REPO" "/opt/kiosk-scripts"
+      "$(get_script_dirname)/internal/install-source-from-git" "$KIOSK_SCRIPTS_COMMITISH" "$KIOSK_SCRIPTS_REPO" "/opt/kiosk-scripts"
       RET=$?
       if [ $RET -eq 0 ]; then
           "$DIALOG" --msgbox "Installation completed without errors." 0 0 3>&1 1>&2 2>&3
@@ -507,6 +528,7 @@ do_update_kiosk_script_files() {
 }
 
 do_enter_kiosk_scripts_repo() {
+    local MSG_TEXT
     MSG_TEXT=""
     MSG_TEXT+="Enter a URL to a git repository.\n"
     MSG_TEXT+="\n"
@@ -519,6 +541,7 @@ do_enter_kiosk_scripts_repo() {
 }
 
 do_set_kiosk_scripts_repo() {
+    local REPO
     REPO=$(do_enter_kiosk_scripts_repo)
     if [ $? -eq 0 ]; then
       set_config_variable "KIOSK_SCRIPTS_REPO" "$REPO" \
@@ -527,6 +550,7 @@ do_set_kiosk_scripts_repo() {
 }
 
 do_enter_kiosk_scripts_commitish() {
+    local MSG_TEXT
     MSG_TEXT=""
     MSG_TEXT+="Enter a branch name or commit hash (\"commitish\").\n"
     MSG_TEXT+="\n"
@@ -539,9 +563,10 @@ do_enter_kiosk_scripts_commitish() {
 }
 
 do_set_kiosk_scripts_commitish() {
-  REPO=$(do_enter_kiosk_scripts_commitish)
+  local COMMITISH
+  COMMITISH=$(do_enter_kiosk_scripts_commitish)
   if [ $? -eq 0 ]; then
-    set_config_variable "KIOSK_SCRIPTS_COMMITISH" "$REPO" \
+    set_config_variable "KIOSK_SCRIPTS_COMMITISH" "$COMMITISH" \
       || "$DIALOG" --msgbox "Error setting kiosk-scripts branch or commit hash" 0 0
   fi
 }
@@ -603,7 +628,7 @@ do_system_information_menu() {
 
 do_main_menu() {
     local FUN RET
-    FUN=$("$DIALOG" --title "Kiosk Configuration Tool (kiosk-config)" \
+    FUN=$("$DIALOG" --title "Kiosk Configuration Tool (kiosk-config $(do_get_git_rev))" \
         --menu "Configure various settings of this kiosk station." 0 0 0 \
         --cancel-button Finish \
         --ok-button Select \
