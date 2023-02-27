@@ -8,8 +8,14 @@ fi
 
 set -e
 
+# Save current environment
+EXPORTED_ENV=$(export)
+
 # Source config file
 . "/etc/default/kiosk"
+
+# Restore previous environment such that it takes precendence over the config files
+eval "$EXPORTED_ENV"
 
 if [[ -z "${KIOSK_SCRIPTS_REPO}" ]]; then
   echo "No kiosk-script repository defined. Please set KIOSK_SCRIPTS_REPO, e.g. via kiosk-config."

@@ -8,6 +8,10 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
+
+# Save current environment
+EXPORTED_ENV=$(export)
+
 # Source system wide default values
 SYSTEM_DEFAULTS_FILE="/etc/default/kiosk"
 [ -r "$SYSTEM_DEFAULTS_FILE" ] && . "$SYSTEM_DEFAULTS_FILE" 
@@ -16,6 +20,10 @@ SYSTEM_DEFAULTS_FILE="/etc/default/kiosk"
 CONFIG_DIR="${XDG_CONFIG_HOME:-"$HOME/.config"}/kiosk"
 USER_DEFAULTS_FILE="${CONFIG_DIR}/default"
 [ -r "$USER_DEFAULTS_FILE" ] && . "$USER_DEFAULTS_FILE" 
+
+# Restore previous environment such that it takes precendence over the config files
+eval "$EXPORTED_ENV"
+
 
 # For some reason, the X server doesn't seem to be fully ready.
 # It is possible to launch applications, but there are problems with framebuffer scaling and window positioning
