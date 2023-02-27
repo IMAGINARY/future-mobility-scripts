@@ -428,17 +428,20 @@ do_localization_menu() {
 
 do_select_installer() {
     do_select_file \
-        "Update-script selection" \
+        "Install-script selection" \
         "Select the installer to run" \
         "No pre-installed exhibits found." \
         /opt/kiosk-scripts/bin/install -perm -a=x -name install-\*
 }
 
-do_run_install_kiosk_scripts()  {
+do_install_exhibit_menu()  {
     local MSG_TEXT CMD RET
     MSG_TEXT="New versions of exhibits can only be installed if their install scripts are updated beforehand via the install-kiosk-scripts script.\n"
     MSG_TEXT+="Some of your local configuration may be overwritten during the update.\n"
     MSG_TEXT+="It is not advised to run the script in a chroot.\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_REPO=$KIOSK_SCRIPTS_REPO\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_COMMITISH=$KIOSK_SCRIPTS_COMMITISH\n"
     MSG_TEXT+="\n"
     MSG_TEXT+="Run install-kiosk-scripts now?"
     "$DIALOG" --yesno "$MSG_TEXT" 0 0
@@ -459,8 +462,48 @@ do_run_install_kiosk_scripts()  {
     fi
 }
 
+do_install_kiosk_scripts() {
+    local MSG_TEXT CMD RET
+    MSG_TEXT=""
+    MSG_TEXT+="Some of your local configuration may be overwritten during the update.\n"
+    MSG_TEXT+="Running this update in a chroot should work.\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_REPO=$KIOSK_SCRIPTS_REPO\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_COMMITISH=$KIOSK_SCRIPTS_COMMITISH\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Update the kiosk-scripts files now?"
+    "$DIALOG" --yesno "$MSG_TEXT" 0 0
+    if [ $? -eq 0 ]; then # yes
+      install-kiosk-scripts
+      RET=$?
+      if [ $RET -eq 0 ]; then
+          "$DIALOG" --msgbox "Installation completed without errors." 0 0 3>&1 1>&2 2>&3
+      else
+          "$DIALOG" --msgbox "An error occurred during installation. Please check the output on the terminal." 0 0 3>&1 1>&2 2>&3
+      fi
+    fi
+}
+
 do_update_kiosk_script_files() {
-  "${BASH_SOURCE%/*}/internal/install-source-from-git" "$KIOSK_SCRIPTS_COMMITISH" "$KIOSK_SCRIPTS_REPO" "/opt/kiosk-scripts"
+    local MSG_TEXT CMD RET
+    MSG_TEXT=""
+    MSG_TEXT+="Some of your local configuration may be overwritten during the update.\n"
+    MSG_TEXT+="Running this update in a chroot should work.\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_REPO=$KIOSK_SCRIPTS_REPO\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_COMMITISH=$KIOSK_SCRIPTS_COMMITISH\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Update the kiosk-scripts files now?"
+    "$DIALOG" --yesno "$MSG_TEXT" 0 0
+    if [ $? -eq 0 ]; then # yes
+      "${BASH_SOURCE%/*}/internal/install-source-from-git" "$KIOSK_SCRIPTS_COMMITISH" "$KIOSK_SCRIPTS_REPO" "/opt/kiosk-scripts"
+      RET=$?
+      if [ $RET -eq 0 ]; then
+          "$DIALOG" --msgbox "Installation completed without errors." 0 0 3>&1 1>&2 2>&3
+      else
+          "$DIALOG" --msgbox "An error occurred during installation. Please check the output on the terminal." 0 0 3>&1 1>&2 2>&3
+      fi
+    fi
 }
 
 do_enter_kiosk_scripts_repo() {
@@ -493,7 +536,7 @@ do_set_kiosk_scripts_commitish() {
   fi
 }
 
-do_update_kiosk_script_menu() {
+do_install_kiosk_script_menu() {
     local FUN RET
     FUN=$("$DIALOG" --title "Kiosk-scripts updater" \
         --menu "Configure and run kiosk-scripts updater" 0 0 0 \
@@ -559,8 +602,9 @@ do_main_menu() {
         "3 Environment" "Set station-specific environment variables" \
         "4 Graphics & Input" "Configure graphics and input devices" \
         "5 Localization" "Set up language and regional settings to match your location" \
-        "6 Update" "Update exhibits and install scripts" \
-        "7 System Information" "Display operating system and hardware information" \
+        "6 Install kiosk scripts" "Install kiosk scripts" \
+        "7 Install exhibits" "Install exhibits" \
+        "8 System Information" "Display operating system and hardware information" \
         3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ]; then
@@ -572,8 +616,9 @@ do_main_menu() {
             3\ *) do_environment_menu ;;
             4\ *) do_graphics_and_input_menu ;;
             5\ *) do_localization_menu ;;
-            6\ *) do_update_kiosk_script_menu ;;
-            7\ *) do_system_information_menu ;;
+            6\ *) do_install_kiosk_script_menu ;;
+            7\ *) do_install_exhibit_menu ;;
+            8\ *) do_system_information_menu ;;
             *) error_unrecognized_option "$FUN" ;;
         esac || error_processing_option "$FUN"
     fi
