@@ -507,23 +507,33 @@ do_update_kiosk_script_files() {
 }
 
 do_enter_kiosk_scripts_repo() {
+    MSG_TEXT=""
+    MSG_TEXT+="Enter a URL to a git repository.\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Current value:\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_REPO=$KIOSK_SCRIPTS_REPO"
     "$DIALOG" --title "kiosk-scripts repository selection" \
-        --inputbox "Enter a URL to a git repository" 0 $D_WIDTH "" \
+        --inputbox "$MSG_TEXT" 0 $D_WIDTH "" \
         --cancel-button Back \
         3>&1 1>&2 2>&3
 }
 
 do_set_kiosk_scripts_repo() {
-  REPO=$(do_enter_kiosk_scripts_repo)
-  if [ $? -eq 0 ]; then
-    set_config_variable "KIOSK_SCRIPTS_REPO" "$REPO" \
-      || "$DIALOG" --msgbox "Error setting kiosk-scripts repository URL" 0 0
-  fi
+    REPO=$(do_enter_kiosk_scripts_repo)
+    if [ $? -eq 0 ]; then
+      set_config_variable "KIOSK_SCRIPTS_REPO" "$REPO" \
+        || "$DIALOG" --msgbox "Error setting kiosk-scripts repository URL" 0 0
+    fi
 }
 
 do_enter_kiosk_scripts_commitish() {
+    MSG_TEXT=""
+    MSG_TEXT+="Enter a branch name or commit hash (\"commitish\").\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Current value:\n"
+    MSG_TEXT+="KIOSK_SCRIPTS_COMMITISH=$KIOSK_SCRIPTS_COMMITISH"
     "$DIALOG" --title "kiosk-scripts branch or commit hash" \
-        --inputbox "Enter a branch name or commit hash (\"commitish\")" 0 $D_WIDTH "" \
+        --inputbox "$MSG_TEXT" 0 $D_WIDTH "" \
         --cancel-button Back \
         3>&1 1>&2 2>&3
 }
