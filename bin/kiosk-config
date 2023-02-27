@@ -369,6 +369,79 @@ do_hidecursor_menu() {
     esac || "$DIALOG" --msgbox "Error applying cursor hiding setting" 0 0
 }
 
+
+do_select_screen_layout_initializer() {
+    local MSG_TEXT
+    MSG_TEXT=""
+    MSG_TEXT+="Select the screen layout script to apply automatically\n"
+    MSG_TEXT+="\n"
+    MSG_TEXT+="Current screen layout script: \"$INIT_SCREEN_LAYOUT\""
+    do_select_file \
+        "ARandR .screenlayout script selection" \
+        "Select the screen layout script to apply automatically" \
+        "No screen layout scripts found in \$HOME/.screenlayout." \
+        "$HOME/.screenlayout" -perm -a=x -name \*
+}
+
+do_custom_screen_layout_initializer() {
+    "$DIALOG" --title "Custom screen layout command" \
+        --inputbox "Enter a command" 0 $D_WIDTH "" \
+        --cancel-button Back \
+        3>&1 1>&2 2>&3
+}
+
+do_screen_layout_menu() {
+    while true; do
+        local FUN RET MENU_TEXT
+        reload_config_file
+        MENU_TEXT="Set system-wide default screen layout initializer. The screen layout initializer will run once before launching the exhibit initilizer.\n"
+        MENU_TEXT+="\n"
+        MENU_TEXT+="Current screen layout script: \"$INIT_SCREEN_LAYOUT\"\n"
+        FUN=$("$DIALOG" --title "Exhibit selection" \
+            --menu "$MENU_TEXT" 0 0 0 \
+            --cancel-button Back \
+            --ok-button Select \
+            "1 Launch ARandR" "Launch the ARandR screen setup tool (you need to save your configuration before exiting)" \
+            "2 Select ARandR .screenlayout script" "Select one of the scripts in ~/.screenlayout" \
+            "3 Custom screen layout command" "Enter a command to set up the screen layout" \
+            "4 Automatic screen layout" "Apply the operating system's automatic screen layout (apply no custom scripts)" \
+            3>&1 1>&2 2>&3)
+        RET=$?
+        if [ $RET -eq 1 ]; then
+            return 0
+        elif [ $RET -eq 0 ]; then
+            local CMD=""
+            case "$FUN" in
+                1\ *)
+                    arandr --randr-display=:0
+                    RET=$?
+                    ;;
+                2\ *)
+                    CMD="$(do_select_screen_layout_initializer)"
+                    RET=$?
+                    ;;
+                3\ *)
+                    CMD="$(do_custom_screen_layout_initializer)"
+                    RET=0
+                    ;;
+                4\ *)
+                    CMD=""
+                    RET=$?
+                    ;;
+                *) error_unrecognized_option "$FUN" ;;
+            esac || error_processing_option "$FUN"
+        fi
+        
+        if [ $RET -eq 0 ]; then
+            if [[ "$FUN" = "2 "* || "$FUN" = "3 "* || "$FUN" = "4 "* ]]; then
+                set_config_variable "INIT_SCREEN_LAYOUT" "$CMD" \
+                    || "$DIALOG" --msgbox "Error setting system-wide screen layout initializer" 0 0
+            fi
+        fi
+    done
+}
+
+
 do_environment_menu() {
   "$DIALOG" --title "Environment variables" \
       --yesno "Do you want to edit the file ${ENVIRONMENT_FILE}?\n\nThe file is a shell script that will be sourced during each login. "export" the variables you want to add to the environment." 0 0
@@ -392,14 +465,18 @@ do_graphics_and_input_menu() {
         --menu "" 0 0 0 \
         --cancel-button Back \
         --ok-button Select \
-        "1 Hide cursor" "Enable or disable cursor hiding" \
+        "1 Screen layout" "Set screen resolution and layout" \
+        "2 Touchscreen map" "Map touch screens to outputs" \
+        "3 Hide cursor" "Enable or disable cursor hiding" \
         3>&1 1>&2 2>&3)
     RET=$?
     if [ $RET -eq 1 ]; then
         return 0
     elif [ $RET -eq 0 ]; then
         case "$FUN" in
-            1\ *) do_hidecursor_menu ;;
+            1\ *) do_screen_layout_menu ;;
+            2\ *) do_touchscreen_map_menu ;;
+            3\ *) do_hidecursor_menu ;;
             *) error_unrecognized_option "$FUN" ;;
         esac || error_processing_option "$FUN"
     fi

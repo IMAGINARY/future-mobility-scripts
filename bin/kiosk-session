@@ -33,6 +33,17 @@ sleep 1
 xset s noblank
 xset s off
 
+# Apply screen layout script, if defined
+if [ -n "$INIT_SCREEN_LAYOUT" ]; then
+    echo "Running screen layout script: $INIT_SCREEN_LAYOUT"
+    ( bash -c "exec $INIT_SCREEN_LAYOUT" ) &
+    PID_CMD=$!
+    PIDS="$PIDS $PID_CMD"
+    wait $PID_CMD
+else
+    >&2 echo "Skipping screen layout setting: No screen layout script found."
+fi
+
 exec_exhibit() {
     local CMD=()
     [ "$HIDE_CURSOR" = true ] && CMD+=( hidecursor )

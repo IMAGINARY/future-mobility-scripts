@@ -39,6 +39,7 @@ install() {
     
     # Install dependencies
     apt install -yq \
+        arandr \
         augeas-tools \
         git \
         inxi \
