@@ -529,9 +529,9 @@ do_enter_kiosk_scripts_commitish() {
 }
 
 do_set_kiosk_scripts_commitish() {
-  REPO=$(do_enter_kiosk_scripts_repo)
+  REPO=$(do_enter_kiosk_scripts_commitish)
   if [ $? -eq 0 ]; then
-    set_config_variable "KIOSK_SCRIPTS_REPO" "$REPO" \
+    set_config_variable "KIOSK_SCRIPTS_COMMITISH" "$REPO" \
       || "$DIALOG" --msgbox "Error setting kiosk-scripts branch or commit hash" 0 0
   fi
 }
