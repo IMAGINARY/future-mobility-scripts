@@ -499,6 +499,7 @@ do_install_kiosk_scripts() {
       RET=$?
       if [ $RET -eq 0 ]; then
           "$DIALOG" --msgbox "Installation completed without errors." 0 0 3>&1 1>&2 2>&3
+          ASK_TO_REBOOT=1
       else
           "$DIALOG" --msgbox "An error occurred during installation. Please check the output on the terminal." 0 0 3>&1 1>&2 2>&3
       fi
@@ -521,6 +522,7 @@ do_update_kiosk_script_files() {
       RET=$?
       if [ $RET -eq 0 ]; then
           "$DIALOG" --msgbox "Installation completed without errors." 0 0 3>&1 1>&2 2>&3
+          ASK_TO_REBOOT=1
       else
           "$DIALOG" --msgbox "An error occurred during installation. Please check the output on the terminal." 0 0 3>&1 1>&2 2>&3
       fi
