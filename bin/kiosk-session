@@ -36,7 +36,7 @@ xset s off
 # Apply screen layout script, if defined
 if [ -n "$INIT_SCREEN_LAYOUT" ]; then
     echo "Running screen layout script: $INIT_SCREEN_LAYOUT"
-    ( bash -c "exec $INIT_SCREEN_LAYOUT" ) &
+    ( bash -c "exec $INIT_SCREEN_LAYOUT"; sleep 1; bash -c "exec $INIT_SCREEN_LAYOUT" ) &
     PID_CMD=$!
     PIDS="$PIDS $PID_CMD"
     wait $PID_CMD
