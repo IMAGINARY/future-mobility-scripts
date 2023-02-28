@@ -413,7 +413,7 @@ do_screen_layout_menu() {
             local CMD=""
             case "$FUN" in
                 1\ *)
-                    arandr --randr-display=:0
+                    sudo -E -u "$SUDO_USER" arandr --randr-display=:0
                     RET=$?
                     ;;
                 2\ *)
