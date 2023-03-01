@@ -12,8 +12,12 @@ install-future-mobility-spy
 # The v4l2 settings can be queried using:
 # $ v4l2-ctl --all -d /dev/the-device-node
 UDEV_RULES_FILES=/etc/udev/rules.d/90-future-mobility.rules
-cat >"${UDEV_RULES_FILES}" <<EOL
+if [ ! -f "$UDEV_RULES_FILES" ]; then
+  cat >"${UDEV_RULES_FILES}" <<EOL
 ATTR{index}=="0", SUBSYSTEM=="video4linux", KERNELS=="1-1:1.0", SUBSYSTEMS=="usb", SYMLINK+="video-top", RUN+="/usr/local/bin/v4l2-ctl-set-ctrls video-top"
 ATTR{index}=="0", SUBSYSTEM=="video4linux", KERNELS=="1-2:1.0", SUBSYSTEMS=="usb", SYMLINK+="video-bottom", RUN+="/usr/local/bin/v4l2-ctl-set-ctrls video-bottom"
 EOL
-udevadm trigger
+  udevadm trigger
+else
+  echo "${UDEV_RULES_FILES} exists. This skript will not modify it. Please check ${BASH_SOURCE[*]} for the default contents." 
+fi
