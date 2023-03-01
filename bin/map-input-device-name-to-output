@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+VERBOSE=false
+
+print_usage() {
+  echo "Usage:" 1>&2
+  echo "map-input-device-name-to-output [-vh] DEVICE_NAME X11_OUTPUT" 1>&2
+}
+
+while getopts 'vh' OPT; do
+  case "${OPT}" in
+    v)
+      VERBOSE=true
+      ;;
+    h)
+      print_usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option ${OPT}" 1>&2
+      echo "" 1>&2
+      print_usage
+      exit 1
+      ;;
+  esac
+done
+shift "$(("${OPTIND}" -1))"
+
+if [[ "${#}" == 0 ]] || [[ "${#}" -gt 2 ]]; then
+  echo "Invalid number of arguments" 1>&2
+  print_usage
+  exit 1
+fi
+
+log() {
+  if [[ "${VERBOSE}" = true ]]; then
+    echo "${@}" 1>&2
+  fi
+}
+
+DEVICE_NAME="$1"
+OUTPUT="$2"
+
+log "Device name: ${DEVICE_NAME}"
+log "Output: ${OUTPUT}"
+
+get_xinput_device_id() {
+  local NAME
+  NAME="$1"
+  xinput list --id-only "${NAME}"
+}
+
+XINPUT_ID=$(get_xinput_device_id "${DEVICE_NAME}")
+log "XInput device ID: ${XINPUT_ID}"
+
+log "Mapping XInput device with ID ${XINPUT_ID} to X11 output ${OUTPUT}"
+xinput map-to-output "${XINPUT_ID}" "${OUTPUT}"
