@@ -1,0 +1,81 @@
+#!/usr/bin/env bash
+
+VERBOSE=false
+
+print_usage() {
+  echo "Usage:" 1>&2
+  echo "map-input-device-node-to-output [-vh] DEVICE_NODE X11_OUTPUT" 1>&2
+}
+
+while getopts 'vh' OPT; do
+  case "${OPT}" in
+    v)
+      VERBOSE=true
+      ;;
+    h)
+      print_usage
+      exit 0
+      ;;
+    *)
+      echo "Unknown option ${OPT}" 1>&2
+      echo "" 1>&2
+      print_usage
+      exit 1
+      ;;
+  esac
+done
+shift "$(("${OPTIND}" -1))"
+
+if [[ "${#}" == 0 ]] || [[ "${#}" -gt 2 ]]; then
+  echo "Invalid number of arguments" 1>&2
+  print_usage
+  exit 1
+fi
+
+log() {
+  if [[ "${VERBOSE}" = true ]]; then
+    echo "${@}" 1>&2
+  fi
+}
+
+DEVICE_NODE="$1"
+OUTPUT="$2"
+
+log "Device node: ${DEVICE_NODE}"
+log "Output: ${OUTPUT}"
+
+get_xinput_device_node() {
+  local ID DEV
+  ID="${1}"
+  SED_CMD='s/^[[:space:]]*Device Node[[:space:]]*([0-9]*):[[:space:]]*\"\(.*\)\"/\1/;t;d'
+  DEV=$(xinput list-props "${ID}" | sed -e "${SED_CMD}" || true)
+  echo "${DEV}"
+}
+
+get_xinput_device_node_canonical() {
+  local ID DEV
+  ID="${1}"
+  DEV=$(get_xinput_device_node "${ID}")
+  readlink -f "${DEV}"
+}
+
+get_xinput_device_id() {
+  local DEV DEV_CANONICAL IDS ID
+  DEV="$1"
+  DEV_CANONICAL=$(readlink -f "${DEV}")
+  log "Canonical device node: ${DEV_CANONICAL}"
+  IDS=$(xinput list --id-only)
+  while IFS= read -r ID; do
+      DEV_OF_ID_CANONICAL=$(get_xinput_device_node_canonical "${ID}")
+      if [[ "${DEV_CANONICAL}" != "${DEV_OF_ID_CANONICAL}" ]]; then
+        echo "${ID}"
+        break;
+      fi
+  done <<< "${IDS}"
+}
+
+XINPUT_ID=$(get_xinput_device_id "${DEVICE_NODE}")
+log "XInput device ID: ${XINPUT_ID}"
+
+log "Mapping XInput device with ID ${XINPUT_ID} to X11 output ${OUTPUT}"
+xinput map-to-output "${XINPUT_ID}" "${OUTPUT}"
