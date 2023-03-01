@@ -442,6 +442,23 @@ do_screen_layout_menu() {
 }
 
 
+do_config_file_menu() {
+  "$DIALOG" --title "Config file" \
+      --yesno "Do you want to edit the file ${CONFIG_FILE}?\n\nThe file is a shell script that will be sourced in various kiosk scripts." 0 0
+  case "$?" in
+      0) edit_config_file ;;
+      1) return 0 ;;
+      255) return 0 ;;
+      *) error_unrecognized_option "$RET" ;;
+  esac || "$DIALOG" --msgbox "Error editing config file" 0 0
+}
+
+edit_config_file() {
+  nano "${CONFIG_FILE}"
+  "$DIALOG" --title "Config file" \
+      --msgbox "The changes to the config file will only be fully in effect after logging out and back in again." 0 0
+}
+
 do_environment_menu() {
   "$DIALOG" --title "Environment variables" \
       --yesno "Do you want to edit the file ${ENVIRONMENT_FILE}?\n\nThe file is a shell script that will be sourced during each login. "export" the variables you want to add to the environment." 0 0
@@ -459,6 +476,10 @@ edit_environment() {
       --msgbox "The changes to the environment have not been applied yet. Either reboot or execute\n\n. \"${ENVIRONMENT_FILE}\"\n\nin your shell." 0 0
 }
 
+do_touchscreen_map_menu() {
+  do_config_file_menu
+}
+
 do_graphics_and_input_menu() {
     local FUN RET
     FUN=$("$DIALOG" --title "Graphics & Input" \
@@ -466,7 +487,7 @@ do_graphics_and_input_menu() {
         --cancel-button Back \
         --ok-button Select \
         "1 Screen layout" "Set screen resolution and layout" \
-        "2 Touchscreen map" "Map touch screens to outputs" \
+        "2 Touchscreen map" "Map touch screens to outputs (edit kiosk config file)" \
         "3 Hide cursor" "Enable or disable cursor hiding" \
         3>&1 1>&2 2>&3)
     RET=$?
