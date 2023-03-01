@@ -67,7 +67,7 @@ get_xinput_device_id() {
   IDS=$(xinput list --id-only)
   while IFS= read -r ID; do
       DEV_OF_ID_CANONICAL=$(get_xinput_device_node_canonical "${ID}")
-      if [[ "${DEV_CANONICAL}" != "${DEV_OF_ID_CANONICAL}" ]]; then
+      if [[ "${DEV_CANONICAL}" == "${DEV_OF_ID_CANONICAL}" ]]; then
         echo "${ID}"
         break;
       fi

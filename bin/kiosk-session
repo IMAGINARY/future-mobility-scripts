@@ -44,6 +44,35 @@ else
     >&2 echo "Skipping screen layout setting: No screen layout script found."
 fi
 
+do_map_touch_screen_devices_to_outputs() {
+    local LENGTH NUM i DEVICE_INDEX OUTPUT_INDEX
+    LENGTH="${#TOUCH_SCREEN_OUTPUT_MAP[@]}"
+    NUM="$(( ${#TOUCH_SCREEN_OUTPUT_MAP[@]} / 2 ))"
+
+    if [[ "$(( $LENGTH % 2 ))" != "0" ]]; then
+        echo "TOUCH_SCREEN_OUTPUT_MAP has uneven length. Aborting."
+        exit 1
+    fi
+
+    for ((i=0; i < "$NUM"; i++))
+    do
+        DEVICE_INDEX=$(( 2 * "${i}" + 0 ))
+        OUTPUT_INDEX=$(( 2 * "${i}" + 1 ))
+        DEVICE="${TOUCH_SCREEN_OUTPUT_MAP[$DEVICE_INDEX]}"
+        OUTPUT="${TOUCH_SCREEN_OUTPUT_MAP[$OUTPUT_INDEX]}"
+        echo "Mapping touch-screen device ${DEVICE} to output ${OUTPUT}."
+        map-input-device-node-to-output -v "${DEVICE}" "${OUTPUT}"
+    done
+}
+
+# Apply touch-screen device mapping, if defined
+if [ -n "$TOUCH_SCREEN_OUTPUT_MAP" ]; then
+    sleep 1
+    do_map_touch_screen_devices_to_outputs
+else
+    >&2 echo "Skipping mapping of touch-screen devices to X11 outputs: TOUCH_SCREEN_OUTPUT_MAP undefined."
+fi
+
 exec_exhibit() {
     local CMD=()
     [ "$HIDE_CURSOR" = true ] && CMD+=( hidecursor )
