@@ -23,11 +23,6 @@ fi
 # Restore previous environment such that it takes precendence over the config files
 eval "$EXPORTED_ENV"
 
-if [[ -z "${KIOSK_SCRIPTS_REPO}" ]]; then
-  echo "No kiosk-script repository defined. Please set KIOSK_SCRIPTS_REPO, e.g. via kiosk-config."
-  exit 1
-fi
-
 REPO_DEFAULT="https://github.com/IMAGINARY/future-mobility-scripts.git"
 REPO="${KIOSK_SCRIPTS_REPO:-$REPO_DEFAULT}"
 if [[ -z "${KIOSK_SCRIPTS_REPO}" ]]; then
