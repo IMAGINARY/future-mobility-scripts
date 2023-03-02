@@ -13,7 +13,7 @@ trap finish SIGINT SIGTERM EXIT
 
 CONFIG_TEMPLATE_FILE="/opt/future-mobility/tag-grid-scanner/config.example.yaml"
 CONFIG_FILE_DEFAULT="${HOME}/.config/future-mobility/scanner-config.yml"
-CONFIG_FILE="${CONFIG_FILE:-$CONFIG_FILE_DEFAULT}"
+CONFIG_FILE="${FUTURE_MOBILITY_SCANNER_CONFIG_FILE:-$CONFIG_FILE_DEFAULT}"
 
 if [[ -z "${FUTURE_MOBILITY_SCANNER_CONFIG_FILE}" ]]; then
   echo "FUTURE_MOBILITY_SCANNER_CONFIG_FILE environment variable not set. Using default value: ${CONFIG_FILE}"
