@@ -39,6 +39,37 @@ else
   echo "Using KIOSK_SCRIPTS_COMMITISH environment variable. Value: ${COMMITISH}"
 fi
 
+# This is basically a copy of ./internal/install-source-from-git, because that
+# file is not available during bootstrapping.
+install_source_from_git() {
+  local COMMITISH REPO_URL INSTALL_DIR
+  COMMITISH="${1}"
+  REPO_URL="${2}"
+  INSTALL_DIR="${3}"
+  
+  # Make sure the folder exists
+  mkdir -p "$INSTALL_DIR"
+
+  cd "$INSTALL_DIR"
+
+  # Set up a new repo or re-use the already existing one
+  git init
+  git remote remove origin &> /dev/null || true
+  git remote add origin "$REPO_URL"
+  git reset --hard
+
+  # Detach HEAD, but only if HEAD points to a commit
+  git rev-parse HEAD &> /dev/null && git checkout --detach
+
+  # Delete all local branches (except for the now detached HEAD)
+  git branch | grep -v "^[*]" | sed 's/^ *//' | xargs -I {} git branch -D "{}"
+
+  # Fetch new data, if any
+  git fetch --tags origin
+
+  # Checkout the requested branch or commit hash
+  git checkout "$COMMITISH"
+}
 
 install() {
     # don't prompt during installations
@@ -74,7 +105,7 @@ install() {
         # git rev-parse doesn't work in this situation
         HASH_BEFORE_UPDATE=$( ( git rev-parse "$COMMITISH" &> /dev/null && git rev-parse "$COMMITISH" ) || echo "$EMPTY_TREE_SHA" )
 
-        "${BASH_SOURCE%/*}/../internal/install-source-from-git" "$COMMITISH" "$REPO" "/opt/kiosk-scripts"
+        install_source_from_git "$COMMITISH" "$REPO" "/opt/kiosk-scripts"
 
         # When the local repo is empty, use the SHA of the empty repo, because
         # git rev-parse doesn't work in this situation
