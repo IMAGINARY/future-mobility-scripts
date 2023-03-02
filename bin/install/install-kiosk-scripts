@@ -12,7 +12,13 @@ set -e
 EXPORTED_ENV=$(export)
 
 # Source config file
-. "/etc/default/kiosk"
+CONFIG_FILE="/etc/default/kiosk"
+if [ -f "${CONFIG_FILE}" ]; then
+    echo "Sourcing config file: ${CONFIG_FILE}"
+    . "${CONFIG_FILE}"
+else
+  echo "No config file available. Using defaults."
+fi
 
 # Restore previous environment such that it takes precendence over the config files
 eval "$EXPORTED_ENV"
@@ -22,7 +28,13 @@ if [[ -z "${KIOSK_SCRIPTS_REPO}" ]]; then
   exit 1
 fi
 
-REPO="$KIOSK_SCRIPTS_REPO"
+REPO_DEFAULT="https://github.com/IMAGINARY/future-mobility-scripts.git"
+REPO="${KIOSK_SCRIPTS_REPO:-$REPO_DEFAULT}"
+if [[ -z "${KIOSK_SCRIPTS_REPO}" ]]; then
+  echo "KIOSK_SCRIPTS_REPO environment variable not set. Using default value: ${REPO}"
+else
+  echo "Using KIOSK_SCRIPTS_REPO environment variable. Value: ${REPO}"
+fi
 
 COMMITISH_DEFAULT="main"
 COMMITISH="${KIOSK_SCRIPTS_COMMITISH:-$COMMITISH_DEFAULT}"
