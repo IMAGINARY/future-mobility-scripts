@@ -6,15 +6,23 @@ DEVICE="$1"
 CTRLS_FILE="/etc/v4l2-ctl/set-ctrl/$DEVICE"
 
 CTRLS=$(tr -d "[:blank:]" < "$CTRLS_FILE")
-CTRLS_AUTO=$(grep "auto=" <<< "$CTRLS")
-CTRLS_NO_AUTO=$(grep -v "auto=" <<< "$CTRLS")
+CTRLS_AUTO=$(grep "auto=" <<< "$CTRLS" || true)
+CTRLS_NO_AUTO=$(grep -v "auto=" <<< "$CTRLS" || true)
 CTRLS_AUTO_CSV=$(tr '\n' ',' <<< "$CTRLS_AUTO")
 CTRLS_NO_AUTO_CSV=$(tr '\n' ',' <<< "$CTRLS_NO_AUTO")
 
 # We need to set the 'auto' controls first because they control if other controls are allowed to be set.
-echo "Applying the following auto-controls to $DEVICE:"
-echo "$CTRLS_AUTO" | sed -e 's/^/ /'
-v4l2-ctl --device "/dev/$DEVICE" --set-ctrl "$CTRLS_AUTO_CSV"
-echo "Applying the following controls to $DEVICE:"
-echo "$CTRLS_NO_AUTO" | sed -e 's/^/ /'
-v4l2-ctl --device "/dev/$DEVICE" --set-ctrl "$CTRLS_NO_AUTO_CSV"
+if [ -z "${CTRLS_AUTO}" ]; then
+  echo "No auto-controls for ${DEVICE}. Skipping."
+else
+  echo "Applying the following auto-controls to $DEVICE:"
+  echo "$CTRLS_AUTO" | sed -e 's/^/ /'
+  v4l2-ctl --device "/dev/$DEVICE" --set-ctrl "$CTRLS_AUTO_CSV"
+fi
+if [ -z "${CTRLS_NO_AUTO}" ]; then
+  echo "No non-auto controls for ${DEVICE}. Skipping."
+else
+  echo "Applying the following controls to $DEVICE:"
+  echo "$CTRLS_NO_AUTO" | sed -e 's/^/ /'
+  v4l2-ctl --device "/dev/$DEVICE" --set-ctrl "$CTRLS_NO_AUTO_CSV"
+fi
