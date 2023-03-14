@@ -67,7 +67,7 @@ do_map_touch_screen_devices_to_outputs() {
 
 # Apply touch-screen device mapping, if defined
 if [ -n "$TOUCH_SCREEN_OUTPUT_MAP" ]; then
-    sleep 1
+    sleep 5
     do_map_touch_screen_devices_to_outputs
 else
     >&2 echo "Skipping mapping of touch-screen devices to X11 outputs: TOUCH_SCREEN_OUTPUT_MAP undefined."
