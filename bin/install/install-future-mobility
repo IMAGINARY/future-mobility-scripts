@@ -7,8 +7,13 @@ install-future-mobility-app
 install-future-mobility-spy
 
 # Add udev rules for cameras.
-# The udev properties can be queried using:
+# The udev attributres can be queried using:
 # $ udevadm info --attribute-walk /dev/the-device-node
+# The udev device names, symlinks, properties can be queried using:
+# $ udevadm info -q all [device_path_or_name]
+# The udev rules should preferably match the (USB) port via
+# SYMLINK=".../path-by/..." or ENV{ID_PATH}="..."
+#
 # The v4l2 settings can be queried using:
 # $ v4l2-ctl --all -d /dev/the-device-node
 UDEV_RULES_FILES=/etc/udev/rules.d/90-future-mobility.rules
