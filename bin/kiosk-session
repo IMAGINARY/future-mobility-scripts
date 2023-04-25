@@ -27,10 +27,6 @@ refresh_config() {
 }
 refresh_config
 
-# For some reason, the X server doesn't seem to be fully ready.
-# It is possible to launch applications, but there are problems with framebuffer scaling and window positioning
-sleep 1
-
 # Disable screen saver
 xset s noblank
 xset s off
@@ -38,10 +34,17 @@ xset s off
 # Apply screen layout script, if defined
 if [ -n "$INIT_SCREEN_LAYOUT" ]; then
     echo "Running screen layout script: $INIT_SCREEN_LAYOUT"
-    ( bash -c "exec $INIT_SCREEN_LAYOUT"; sleep 1; bash -c "exec $INIT_SCREEN_LAYOUT" ) &
+    timeout 3m bash -c "DELAY=1; echo \$DELAY; while true; do \"${INIT_SCREEN_LAYOUT}\"; RET=\$?; if [[ \$RET != 0 ]]; then echo \"Screen layout script did not succeed (Exit code: \$RET). Will retry in \${DELAY}s.\"; echo 'Current screen layout:'; xrandr; sleep \$DELAY; else break; fi; DELAY=\$(( \$DELAY * 2 )); done"
     PID_CMD=$!
     PIDS="$PIDS $PID_CMD"
     wait $PID_CMD
+    if [[ $? != 0 ]]; then
+        echo "Screen layout script did not succeed. Giving up."
+    else
+        echo "Screen layout script seems to have succeeded."
+    fi
+    echo "Current screen layout:"
+    xrandr
 else
     >&2 echo "Skipping screen layout setting: No screen layout script found."
 fi
