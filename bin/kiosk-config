@@ -380,7 +380,7 @@ do_select_screen_layout_initializer() {
         "ARandR .screenlayout script selection" \
         "Select the screen layout script to apply automatically" \
         "No screen layout scripts found in \$HOME/.screenlayout." \
-        "$HOME/.screenlayout" -perm -a=x -name \*
+        "$HOME/.screenlayout" -perm -u=x -type f -name \*
 }
 
 do_custom_screen_layout_initializer() {
