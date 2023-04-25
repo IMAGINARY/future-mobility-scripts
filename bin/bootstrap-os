@@ -46,6 +46,7 @@ bootstrap() {
         picom \
         qjackctl \
         qsynth \
+        q4vl2 \
         ranger \
         vmpk \
         v4l-utils \
