@@ -62,3 +62,9 @@ rm /files/etc/default/grub/GRUB_CMDLINE_LINUX_DEFAULT/value[. = "splash"]
 #set /files/usr/share/X11/xorg.conf.d/20-intel.conf/Device[Identifier = "Intel Graphics"]/Option[. = "TearFree"]/value "true"
 #set /files/usr/share/X11/xorg.conf.d/20-intel.conf/Device[Identifier = "Intel Graphics"]/Option[. = "TripleBuffer"] "TripleBuffer"
 #set /files/usr/share/X11/xorg.conf.d/20-intel.conf/Device[Identifier = "Intel Graphics"]/Option[. = "TripleBuffer"]/value "true"
+
+# enable tear-free mode for the modesetting driver
+set /files/usr/share/X11/xorg.conf.d/modesetting.conf/Device[Identifier = "Graphics Adapter"]/Identifier "Graphics Adapter"
+set /files/usr/share/X11/xorg.conf.d/modesetting.conf/Device[Identifier = "Graphics Adapter"]/Driver "modesetting"
+set /files/usr/share/X11/xorg.conf.d/modesetting.conf/Device[Identifier = "Graphics Adapter"]/Option[. = "TearFree"] "TearFree"
+set /files/usr/share/X11/xorg.conf.d/modesetting.conf/Device[Identifier = "Graphics Adapter"]/Option[. = "TearFree"]/value "true"
