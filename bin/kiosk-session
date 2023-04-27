@@ -70,38 +70,25 @@ do_map_touch_screen_devices_to_outputs() {
     done
 }
 
-do_loop_map_touch_screen_devices_to_outputs() {
-    local TOUCH_SCREEN_OUTPUT_MAP_OLD XINPUT_OUTPUT_BEFORE XINPUT_OUTPUT_AFTER DISPLAY_OUTPUT_OVERRIDE RET
-    TOUCH_SCREEN_OUTPUT_MAP_OLD=false
-    DISPLAY_OUTPUT_OVERRIDE=true
-    while true; do
-        refresh_config
-        if [ -n "$TOUCH_SCREEN_OUTPUT_MAP" ]; then
-            XINPUT_OUTPUT_BEFORE=$(xinput list --long; xinput list --id-only | xargs -I {} xinput list-props "{}")
-            OUTPUT=$(do_map_touch_screen_devices_to_outputs 2>&1)
-            RET=$?
-            XINPUT_OUTPUT_AFTER=$(xinput list --long; xinput list --id-only | xargs -I {} xinput list-props "{}")
-
-            if [[ "${RET}" != 0 || "${DISPLAY_OUTPUT_OVERRIDE}" == true || "${XINPUT_OUTPUT_BEFORE}" != "${XINPUT_OUTPUT_AFTER}" ]]; then
-                DISPLAY_OUTPUT_OVERRIDE=false
-                echo "${OUTPUT}"
-            fi
-            TOUCH_SCREEN_OUTPUT_MAP_OLD=("${TOUCH_SCREEN_OUTPUT_MAP[@]}")
-        else
-            DISPLAY_OUTPUT_OVERRIDE=true
-
-            # Only print this message if the map has changed
-            if [[ "${TOUCH_SCREEN_OUTPUT_MAP[*]}" != "${TOUCH_SCREEN_OUTPUT_MAP_OLD[*]}" ]]; then
-                >&2 echo "Skipping mapping of touch-screen devices to X11 outputs: TOUCH_SCREEN_OUTPUT_MAP undefined."
-            fi
-        fi
-        sleep 5
-    done
+# Monitor RandR and XInput events and map touch-screen devices to outputs accordingly
+do_monitor_and_map_touch_screen_devices_to_outputs() {
+    # RandR events
+    (
+        (echo "RRScreenChangeNotify event Bootstrapping!"; xev -root -event randr) |
+            grep --line-buffered "RRScreenChangeNotify event" |
+            while read -r; do xrandr; do_map_touch_screen_devices_to_outputs; done
+    ) &
+    PIDS="$PIDS $!"
+    # XInput events
+    (
+        inputplug --foreground --bootstrap --no-act --verbose --command "" |
+            grep --line-buffered -E '^"" "XIDeviceEnabled" "[0-9]+" "XISlavePointer"' |
+            while read -r; do do_map_touch_screen_devices_to_outputs; done
+    ) &
+    PIDS="$PIDS $!"
 }
 
-# Apply touch-screen device mapping repeatedly in the background
-(do_loop_map_touch_screen_devices_to_outputs) &
-PIDS="$PIDS $!"
+do_monitor_and_map_touch_screen_devices_to_outputs
 
 exec_exhibit() {
     local CMD=()
