@@ -106,7 +106,8 @@ PIDS="$PIDS $!"
 
 # Run a compositor in the background for dealing with vsync and tearing
 # Should be done after screen setup (e.g. in init-* scripts)
-picom --backend=glx --use-damage --vsync &
+# Configure picom via its config file (see `man picom`)
+picom &
 PIDS="$PIDS $!"
 
 # Set wallpaper
