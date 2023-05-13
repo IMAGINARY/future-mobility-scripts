@@ -51,6 +51,7 @@ bootstrap() {
         qsynth \
         q4vl2 \
         ranger \
+        scrot \
         vmpk \
         v4l-utils \
         xpra \
