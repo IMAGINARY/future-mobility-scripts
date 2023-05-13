@@ -19,6 +19,7 @@ fi
 # Launch the exhibit in the background
 kiosk-browser $KIOSK_OPTS \
     --app-name-suffix=future-mobility-app-dashboard \
+    --remote-debugging-port 9223 \
     --kiosk \
     --fullscreen \
     --hide-scrollbars \
