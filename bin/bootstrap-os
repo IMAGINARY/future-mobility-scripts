@@ -54,6 +54,7 @@ bootstrap() {
         scrot \
         vmpk \
         v4l-utils \
+        x11vnc \
         xpra \
         xterm \
         '' # dummy entry to terminate the list
