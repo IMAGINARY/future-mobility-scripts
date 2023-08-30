@@ -31,7 +31,7 @@ else
   echo "Using KIOSK_SCRIPTS_REPO environment variable. Value: ${REPO}"
 fi
 
-COMMITISH_DEFAULT="main"
+COMMITISH_DEFAULT="installation/verkehrsmuseum-dresden"
 COMMITISH="${KIOSK_SCRIPTS_COMMITISH:-$COMMITISH_DEFAULT}"
 if [[ -z "${KIOSK_SCRIPTS_COMMITISH}" ]]; then
   echo "KIOSK_SCRIPTS_COMMITISH environment variable not set. Using default value: ${COMMITISH}"

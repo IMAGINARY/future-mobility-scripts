@@ -7,7 +7,7 @@
 KIOSK_SCRIPTS_REPO="https://github.com/IMAGINARY/future-mobility-scripts.git"
 
 # Branch or commit SHA from the KIOSK_SCRIPTS_REPO to use for installing
-KIOSK_SCRIPTS_COMMITISH="main"
+KIOSK_SCRIPTS_COMMITISH="installation/verkehrsmuseum-dresden"
 
 # Map touch-screen devices to X11 outputs via the touch-screens device node
 # This is an array of even length containing the device node/output name pairs.
