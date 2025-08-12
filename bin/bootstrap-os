@@ -49,7 +49,7 @@ bootstrap() {
         picom \
         qjackctl \
         qsynth \
-        q4vl2 \
+        qv4l2 \
         ranger \
         scrot \
         vmpk \
