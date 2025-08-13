@@ -46,7 +46,7 @@ trap finish SIGINT SIGTERM EXIT
 PROJECT_PATH=/opt/future-mobility/tag-grid-scanner
 export PIPENV_PIPFILE="\${PROJECT_PATH}/Pipfile"
 export PIPENV_VENV_IN_PROJECT=1
-pipenv run python "\${PROJECT_PATH}/runner.py" "\$@" &
+{ pipenv run python "\${PROJECT_PATH}/runner.py" "\$@" <&3 3<&- & } 3<&0
 PID_UI=\$!
 PIDS="\$PIDS \$PID_UI"
 
