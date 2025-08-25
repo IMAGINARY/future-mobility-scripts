@@ -26,7 +26,10 @@ apt install -yq --no-install-recommends \
 PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install pipenv==2025.0.4
 
 cd "$INSTALL_DIR" || exit 1
+# Install dependencies
 PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
+# Clean up packages that might have been installed previously, but are not longer needed (and might cause dependency issues)
+PIPENV_VENV_IN_PROJECT=1 pipenv clean
 
 TAG_GRID_SCANNER_EXECUTABLE=/usr/bin/tag-grid-scanner
 cat >"${TAG_GRID_SCANNER_EXECUTABLE}" <<EOL
