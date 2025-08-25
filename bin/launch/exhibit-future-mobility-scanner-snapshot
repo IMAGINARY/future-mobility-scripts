@@ -11,8 +11,7 @@ function finish {
 trap finish SIGINT SIGTERM EXIT
 
 
-CONFIG_TEMPLATE_FILE="/opt/future-mobility/tag-grid-scanner/config.example.yaml"
-CONFIG_FILE_DEFAULT="${HOME}/.config/future-mobility/scanner-config.yml"
+CONFIG_FILE_DEFAULT="/opt/future-mobility/tag-grid-scanner/examples/marker/config.marker.yml"
 CONFIG_FILE="${FUTURE_MOBILITY_SCANNER_CONFIG_FILE:-$CONFIG_FILE_DEFAULT}"
 
 if [[ -z "${FUTURE_MOBILITY_SCANNER_CONFIG_FILE}" ]]; then
