@@ -25,6 +25,8 @@ else
   echo "Using FUTURE_MOBILITY_APP_DIR environment variable. Value: ${APP_DIR}"
 fi
 
+DIST_DIR="${APP_DIR}/dist"
+
 # Launch the exhibit in the background
 kiosk-browser $KIOSK_OPTS \
     --app-name-suffix=future-mobility-app-city \
@@ -33,7 +35,7 @@ kiosk-browser $KIOSK_OPTS \
     --fullscreen \
     --hide-scrollbars \
     --reload-unresponsive 60 \
-    --serve "$APP_DIR" \
+    --serve "$DIST_DIR" \
     "${OPTS[@]}" \
     city.html &
 PID_UI=$!
