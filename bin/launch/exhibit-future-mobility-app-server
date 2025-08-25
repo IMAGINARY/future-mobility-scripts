@@ -19,7 +19,7 @@ else
   echo "Using FUTURE_MOBILITY_APP_DIR environment variable. Value: ${APP_DIR}"
 fi
 
-CONFIG_FILE_DEFAULT="${HOME}/.config/future-mobility/app-settings.yml"
+CONFIG_FILE_DEFAULT="${APP_DIR}/settings.yml"
 CONFIG_FILE="${FUTURE_MOBILITY_APP_CONFIG_FILE:-$CONFIG_FILE_DEFAULT}"
 
 if [[ -z "${FUTURE_MOBILITY_APP_CONFIG_FILE}" ]]; then
@@ -29,14 +29,7 @@ else
 fi
 
 SERVER_INSTALL_DIR="${FUTURE_MOBILITY_APP_DIR}/server"
-CONFIG_DIR="$(dirname "${CONFIG_FILE}")"
 NODEJS_PATH="/opt/future-mobility/nodejs/bin"
-
-# Create a settings file if it doesn't exist already
-if [ ! -f "${CONFIG_FILE}" ]; then
-  mkdir -p "${CONFIG_DIR}" && \
-  cp -n "${APP_DIR}/settings.yml" "${CONFIG_FILE}"
-fi
 
 # Launch the future-mobility server
 cd "${SERVER_INSTALL_DIR}" || exit 1
