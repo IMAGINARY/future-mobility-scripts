@@ -28,12 +28,19 @@ else
   echo "Using FUTURE_MOBILITY_APP_CONFIG_FILE environment variable. Value: ${CONFIG_FILE}"
 fi
 
+# Options
+OPTS=(-s "${CONFIG_FILE}")
+# Configure sentry.io data source name (dsn)
+if [ ! -z "${FUTURE_MOBILITY_SERVER_SENTRY_DSN}" ]; then
+  OPTS=(--sentry-dsn "${FUTURE_MOBILITY_SERVER_SENTRY_DSN}")
+fi
+
 SERVER_INSTALL_DIR="${FUTURE_MOBILITY_APP_DIR}/server"
 NODEJS_PATH="/opt/future-mobility/nodejs/bin"
 
 # Launch the future-mobility server
 cd "${SERVER_INSTALL_DIR}" || exit 1
-PATH="$NODEJS_PATH:$PATH" node main.js -s "${CONFIG_FILE}" &
+PATH="$NODEJS_PATH:$PATH" node main.js "${OPTS[@]}" &
 PID_SERVER="$!"
 PIDS="$PIDS $PID_SERVER"
 

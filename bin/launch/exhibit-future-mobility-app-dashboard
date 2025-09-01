@@ -16,6 +16,14 @@ then
   OPTS=(--cover-displays "${FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY}")
 fi
 
+# Options
+QUERY_STRING=""
+# Configure sentry.io data source name (dsn)
+if [ ! -z "${FUTURE_MOBILITY_SENTRY_DSN}" ]
+then
+  QUERY_STRING="${QUERY_STRING}&sentry-dsn=${FUTURE_MOBILITY_SENTRY_DSN}"
+fi
+
 APP_DIR_DEFAULT="/opt/future-mobility/future-mobility"
 APP_DIR="${FUTURE_MOBILITY_APP_DIR:-$APP_DIR_DEFAULT}"
 
@@ -37,7 +45,7 @@ kiosk-browser $KIOSK_OPTS \
     --reload-unresponsive 60 \
     --serve "$DIST_DIR" \
     "${OPTS[@]}" \
-    dashboard.html &
+    "dashboard.html?${QUERY_STRING}" &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
 
