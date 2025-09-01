@@ -31,8 +31,8 @@ fi
 # Options
 OPTS=(-s "${CONFIG_FILE}")
 # Configure sentry.io data source name (dsn)
-if [ ! -z "${FUTURE_MOBILITY_SERVER_SENTRY_DSN}" ]; then
-  OPTS=(--sentry-dsn "${FUTURE_MOBILITY_SERVER_SENTRY_DSN}")
+if [ ! -z "${FUTURE_MOBILITY_SENTRY_DSN}" ]; then
+  OPTS=(--sentry-dsn "${FUTURE_MOBILITY_SENTRY_DSN}")
 fi
 
 SERVER_INSTALL_DIR="${FUTURE_MOBILITY_APP_DIR}/server"
