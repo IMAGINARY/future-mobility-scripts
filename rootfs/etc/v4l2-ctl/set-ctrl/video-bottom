@@ -1,5 +1,5 @@
 auto_exposure=1
-exposure_time_absolute=1000
+exposure_time_absolute=400
 gamma=72
 white_balance_automatic=0
 white_balance_temperature=3000
