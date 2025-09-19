@@ -14,7 +14,10 @@ bootstrap() {
 
     # Add Xpra repository
     wget -q -O "/usr/share/keyrings/xpra.asc" https://xpra.org/gpg.asc
-    wget -q -O "/etc/apt/sources.list.d/xpra.sources" https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/jammy/xpra.sources
+    wget -q -O "/etc/apt/sources.list.d/xpra.sources" https://raw.githubusercontent.com/Xpra-org/xpra/master/packaging/repos/noble/xpra.sources
+
+    # Add Jeff250's Xorg repository containing the modesetting driver with TearFree option
+    add-apt-repository -y ppa:jeff250/xserver-xorg-with-tearfree-modesetting
 
     # Update the list of available packages
     apt update
@@ -46,9 +49,12 @@ bootstrap() {
         picom \
         qjackctl \
         qsynth \
+        qv4l2 \
         ranger \
+        scrot \
         vmpk \
         v4l-utils \
+        x11vnc \
         xpra \
         xterm \
         '' # dummy entry to terminate the list
@@ -68,6 +74,11 @@ bootstrap() {
     if [[ "$*" == *--confirm-rsync-overwrite* ]]; then
         INSTALL_KIOSK_SCRIPTS_ARGS+=( "--confirm-rsync-overwrite" )
     fi
+    TMP_KIOSK_SCRIPTS_DIR="$(mktemp -d --suffix -kiosk-scripts)"
+
+    git clone --depth 1 https://github.com/IMAGINARY/future-mobility-scripts "${TMP_KIOSK_SCRIPTS_DIR}"
+    bash "${TMP_KIOSK_SCRIPTS_DIR}/bin/install/install-kiosk-scripts" "${INSTALL_KIOSK_SCRIPTS_ARGS[@]}"
+    rm -r "${TMP_KIOSK_SCRIPTS_DIR}"
     curl -L https://github.com/IMAGINARY/future-mobility-scripts/raw/installation/verkehrsmuseum-dresden/bin/install/install-kiosk-scripts | bash -s -- "${INSTALL_KIOSK_SCRIPTS_ARGS[@]}"
     source "/opt/kiosk-scripts/rootfs/etc/profile.d/kiosk-bin-path.sh"
 

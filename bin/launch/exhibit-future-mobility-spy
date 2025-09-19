@@ -35,6 +35,7 @@ LOCAL_STORAGE_JSON="${CONFIG_FILE}" kiosk-browser $KIOSK_OPTS \
     --append-chrome-switch=--ignore-gpu-blacklist \
     --append-chrome-switch=--disable-background-timer-throttling \
     --append-chrome-switch=--autoplay-policy=no-user-gesture-required \
+    --remote-debugging-port 9224 \
     --fullscreen \
     --hide-scrollbars \
     --reload-unresponsive 60 \

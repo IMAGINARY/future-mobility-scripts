@@ -11,8 +11,7 @@ function finish {
 trap finish SIGINT SIGTERM EXIT
 
 
-CONFIG_TEMPLATE_FILE="/opt/future-mobility/tag-grid-scanner/config.example.yaml"
-CONFIG_FILE_DEFAULT="${HOME}/.config/future-mobility/scanner-config.yml"
+CONFIG_FILE_DEFAULT="/opt/future-mobility/tag-grid-scanner/examples/marker/config.marker.yml"
 CONFIG_FILE="${FUTURE_MOBILITY_SCANNER_CONFIG_FILE:-$CONFIG_FILE_DEFAULT}"
 
 if [[ -z "${FUTURE_MOBILITY_SCANNER_CONFIG_FILE}" ]]; then
@@ -20,11 +19,6 @@ if [[ -z "${FUTURE_MOBILITY_SCANNER_CONFIG_FILE}" ]]; then
 else
   echo "Using FUTURE_MOBILITY_SCANNER_CONFIG_FILE environment variable. Value: ${CONFIG_FILE}"
 fi
-
-
-# Create a settings file if it doesn't exist already
-mkdir -p "$(dirname "${CONFIG_DIR}")" && \
-  cp -n "${CONFIG_TEMPLATE_FILE}" "${CONFIG_FILE}"
 
 
 # Launch the tag-grid-scanner with the right config file

@@ -16,16 +16,36 @@ then
   OPTS=(--cover-displays "${FUTURE_MOBILITY_APP_DASHBOARD_DISPLAY}")
 fi
 
+# Options
+QUERY_STRING=""
+# Configure sentry.io data source name (dsn)
+if [ ! -z "${FUTURE_MOBILITY_SENTRY_DSN}" ]
+then
+  QUERY_STRING="${QUERY_STRING}&sentry-dsn=${FUTURE_MOBILITY_SENTRY_DSN}"
+fi
+
+APP_DIR_DEFAULT="/opt/future-mobility/future-mobility"
+APP_DIR="${FUTURE_MOBILITY_APP_DIR:-$APP_DIR_DEFAULT}"
+
+if [[ -z "${FUTURE_MOBILITY_APP_DIR}" ]]; then
+  echo "FUTURE_MOBILITY_APP_DIR environment variable not set. Using default value: ${APP_DIR}"
+else
+  echo "Using FUTURE_MOBILITY_APP_DIR environment variable. Value: ${APP_DIR}"
+fi
+
+DIST_DIR="${APP_DIR}/dist"
+
 # Launch the exhibit in the background
 kiosk-browser $KIOSK_OPTS \
     --app-name-suffix=future-mobility-app-dashboard \
+    --remote-debugging-port 9223 \
     --kiosk \
     --fullscreen \
     --hide-scrollbars \
     --reload-unresponsive 60 \
-    --serve /opt/future-mobility/future-mobility \
+    --serve "$DIST_DIR" \
     "${OPTS[@]}" \
-    dashboard.html &
+    "dashboard.html?${QUERY_STRING}" &
 PID_UI=$!
 PIDS="$PIDS $PID_UI"
 

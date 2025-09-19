@@ -81,6 +81,8 @@ install() {
         augeas-tools \
         git \
         inxi \
+        inputplug \
+        x11-utils \
         '' # dummy entry to terminate the list
 
     # retrieve files via git

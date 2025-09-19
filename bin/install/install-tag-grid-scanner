@@ -7,7 +7,7 @@ export DEBIAN_FRONTEND=noninteractive
 # Update the list of available packages
 apt update
 
-COMMITISH="a8f0b18"
+COMMITISH="53eab4fd4c3703d62087838f68c5d3174a590f04"
 REPO_URL="https://github.com/IMAGINARY/tag-grid-scanner.git"
 INSTALL_DIR="/opt/future-mobility/tag-grid-scanner"
 
@@ -22,11 +22,14 @@ apt install -yq --no-install-recommends \
     python3.9-distutils \
     '' # dummy entry to terminate the list
 
-# Install pipenv from PyPI because the one packages with Ubuntu 22.04 is broken.
-PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install pipenv==2023.2.4
+# Install pipenv from PyPI because the Ubuntu 24.04 package seems broken.
+PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install pipenv==2025.0.4
 
 cd "$INSTALL_DIR" || exit 1
+# Install dependencies
 PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
+# Clean up packages that might have been installed previously, but are not longer needed (and might cause dependency issues)
+PIPENV_VENV_IN_PROJECT=1 pipenv clean
 
 TAG_GRID_SCANNER_EXECUTABLE=/usr/bin/tag-grid-scanner
 cat >"${TAG_GRID_SCANNER_EXECUTABLE}" <<EOL
@@ -46,7 +49,7 @@ trap finish SIGINT SIGTERM EXIT
 PROJECT_PATH=/opt/future-mobility/tag-grid-scanner
 export PIPENV_PIPFILE="\${PROJECT_PATH}/Pipfile"
 export PIPENV_VENV_IN_PROJECT=1
-pipenv run python "\${PROJECT_PATH}/runner.py" "\$@" &
+{ pipenv run python "\${PROJECT_PATH}/runner.py" "\$@" <&3 3<&- & } 3<&0
 PID_UI=\$!
 PIDS="\$PIDS \$PID_UI"
 

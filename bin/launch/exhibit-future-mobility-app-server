@@ -10,18 +10,37 @@ function finish {
 }
 trap finish SIGINT SIGTERM EXIT
 
-INSTALL_DIR="/opt/future-mobility/future-mobility/"
-SERVER_INSTALL_DIR="/opt/future-mobility/future-mobility/server"
-CONFIG_DIR="${HOME}/.config/future-mobility"
-NODEJS_PATH="/opt/future-mobility/nodejs/bin"
+APP_DIR_DEFAULT="/opt/future-mobility/future-mobility"
+APP_DIR="${FUTURE_MOBILITY_APP_DIR:-$APP_DIR_DEFAULT}"
 
-# Create a settings file if it doesn't exist already
-mkdir -p "${CONFIG_DIR}" && \
-  cp -n "${INSTALL_DIR}/settings.yml" "${CONFIG_DIR}/app-settings.yml"
+if [[ -z "${FUTURE_MOBILITY_APP_DIR}" ]]; then
+  echo "FUTURE_MOBILITY_APP_DIR environment variable not set. Using default value: ${APP_DIR}"
+else
+  echo "Using FUTURE_MOBILITY_APP_DIR environment variable. Value: ${APP_DIR}"
+fi
+
+CONFIG_FILE_DEFAULT="${APP_DIR}/settings.yml"
+CONFIG_FILE="${FUTURE_MOBILITY_APP_CONFIG_FILE:-$CONFIG_FILE_DEFAULT}"
+
+if [[ -z "${FUTURE_MOBILITY_APP_CONFIG_FILE}" ]]; then
+  echo "FUTURE_MOBILITY_APP_CONFIG_FILE environment variable not set. Using default value: ${CONFIG_FILE}"
+else
+  echo "Using FUTURE_MOBILITY_APP_CONFIG_FILE environment variable. Value: ${CONFIG_FILE}"
+fi
+
+# Options
+OPTS=(-s "${CONFIG_FILE}")
+# Configure sentry.io data source name (dsn)
+if [ ! -z "${FUTURE_MOBILITY_SENTRY_DSN}" ]; then
+  OPTS=(--sentry-dsn "${FUTURE_MOBILITY_SENTRY_DSN}")
+fi
+
+SERVER_INSTALL_DIR="${FUTURE_MOBILITY_APP_DIR}/server"
+NODEJS_PATH="/opt/future-mobility/nodejs/bin"
 
 # Launch the future-mobility server
 cd "${SERVER_INSTALL_DIR}" || exit 1
-PATH="$NODEJS_PATH:$PATH" node main.js -s "${CONFIG_DIR}/app-settings.yml" &
+PATH="$NODEJS_PATH:$PATH" node main.js "${OPTS[@]}" &
 PID_SERVER="$!"
 PIDS="$PIDS $PID_SERVER"
 
