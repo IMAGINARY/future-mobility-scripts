@@ -35,7 +35,7 @@ if [ ! -z "${FUTURE_MOBILITY_SENTRY_DSN}" ]; then
   OPTS=(--sentry-dsn "${FUTURE_MOBILITY_SENTRY_DSN}")
 fi
 
-SERVER_INSTALL_DIR="${FUTURE_MOBILITY_APP_DIR}/server"
+SERVER_INSTALL_DIR="${APP_DIR}/server"
 NODEJS_PATH="/opt/future-mobility/nodejs/bin"
 
 # Launch the future-mobility server
