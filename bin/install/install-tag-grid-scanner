@@ -23,11 +23,12 @@ apt install -yq --no-install-recommends \
     '' # dummy entry to terminate the list
 
 # Install pipenv from PyPI because the Ubuntu 24.04 package seems broken.
-PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install pipenv==2025.0.4
+PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install --force pipenv==2025.0.4
 
 cd "$INSTALL_DIR" || exit 1
 # Install dependencies
 PIPENV_VENV_IN_PROJECT=1 pipenv install --deploy
+PIPENV_VENV_IN_PROJECT=1 pipenv sync
 # Clean up packages that might have been installed previously, but are not longer needed (and might cause dependency issues)
 PIPENV_VENV_IN_PROJECT=1 pipenv clean
 
