@@ -67,7 +67,7 @@ if [[ "${FUTURE_MOBILITY_SPY}" == true ]]; then
   PIDS="$PIDS $PID_SPY"
 fi
 
-sleep 2
+sleep 4
 
 exhibit-future-mobility-app-dashboard &
 PID_APP_DASHBOARD=$!
