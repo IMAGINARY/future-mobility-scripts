@@ -74,7 +74,7 @@ bootstrap() {
     if [[ "$*" == *--confirm-rsync-overwrite* ]]; then
         INSTALL_KIOSK_SCRIPTS_ARGS+=( "--confirm-rsync-overwrite" )
     fi
-    TMP_KIOSK_SCRIPTS_DIR="$(mktemp -d --suffix -autostadt-ki-und-du-kiosk-scripts)"
+    TMP_KIOSK_SCRIPTS_DIR="$(mktemp -d --suffix -kiosk-scripts)"
 
     git clone --depth 1 https://github.com/IMAGINARY/future-mobility-scripts "${TMP_KIOSK_SCRIPTS_DIR}"
     bash "${TMP_KIOSK_SCRIPTS_DIR}/bin/install/install-kiosk-scripts" "${INSTALL_KIOSK_SCRIPTS_ARGS[@]}"
